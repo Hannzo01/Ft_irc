@@ -16,8 +16,12 @@ public:
     // Setters
     void setNick(const std::string& nick);
     void setUser(const std::string& user);
+    void setRealName(const std::string& realName);
 
+    void setHasUser(bool hasUser);
     void setAuthorized(bool authorized);
+    void setPassFilled(bool passfilled);
+     void setNickFilled(bool nickffiled);
     void setCurrentChannel(Channel* channel);
 
     // Getters
@@ -26,6 +30,9 @@ public:
     const std::string& getUser() const;
 
     bool isAuthorized() const;
+    bool hasUser()const;
+    bool passFilled()const;
+    bool nickFilled() const;
     Channel* getCurrentChannel() const;
     std::string& getBuffer();
 
@@ -38,7 +45,11 @@ private:
     int _fd;                         // Socket file descriptor
     std::string _nickname;
     std::string _username;
+    std::string _realName;
     bool _authorized;
+    bool _hasUser;
+    bool _passFilled;
+    bool _nickFilled;
     std::string _buffer;             // Used for partial reads
 
     std::vector<Channel*> _joinedChannels;

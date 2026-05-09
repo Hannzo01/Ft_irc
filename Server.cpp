@@ -127,6 +127,24 @@ Client* Server::getClientByFd(int fd)
     return NULL;
 }
 
+
+std::string Server::getPass()
+{
+    return _pass;
+}
+
+bool Server::nickIsInUse(std::string nickname)const
+{
+    for (size_t i = 0; i  < clients.size(); i++)
+    {
+        if (clients[i]->getNick() == nickname)
+            return true;
+    }
+    return false;
+}
+
+
+
 void Server::handle_command(int fd, const std::string& cmd)
 {
     Client* client = getClientByFd(fd);

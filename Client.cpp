@@ -5,7 +5,7 @@
 #include <algorithm>
 
 Client::Client(int fd)
-    : _fd(fd), _authorized(false), _currentChannel(NULL) {}
+    : _fd(fd), _authorized(false), _passFilled(false),_nickFilled(false), _hasUser(false), _currentChannel(NULL) {}
 
 Client::~Client() {}
 
@@ -33,3 +33,32 @@ void Client::leaveChannel(Channel* channel) {
 }
 
 const std::vector<Channel*>& Client::getChannels() const { return _joinedChannels; }
+
+bool Client::hasUser()const
+{
+    return _hasUser;
+}
+bool Client::passFilled()const
+{
+    return _passFilled;
+}
+void Client::setRealName(const std::string& realName)
+{
+    _realName = realName;
+}
+void Client::setHasUser(bool hasUser)
+{
+    _hasUser = hasUser;
+}
+void Client::setPassFilled(bool passfilled)
+{
+    _passFilled = passFilled;
+}
+bool Client::nickFilled() const
+{
+    return _nickFilled;
+}
+void Client::setNickFilled(bool nickffiled)
+{
+    _nickFilled = nickffiled;
+}

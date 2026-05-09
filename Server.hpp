@@ -49,4 +49,8 @@ class Server
         void receive_cmd(size_t &i, int current_fd);
         void handle_command(int fd, const std::string& cmd);
         Client* getClientByFd(int fd);
+
+        /*la plus inportant*/
+        std::string getPass();
+        bool nickIsInUse(std::string nickname)const;
 };
