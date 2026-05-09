@@ -1,4 +1,4 @@
-#pragma 
+#pragma once 
 
 #include <sys/socket.h>
 #include <iostream>
@@ -15,14 +15,38 @@
 #include <map>
 #include <fcntl.h>
 #include <signal.h>
+#include "Client.hpp"
+#include "Channel.hpp"
 
+
+
+class Client;
+class Channel;
 class Server
 {
     private:
+        std::vector<Client *> clients;
+        std::map<std::string, Channel*> _channels; // ✅ pour handle_command
+
+        int _port;
+        std::string _pass;
+        int _ss;
+        struct pollfd _spfd;
+        std::map<int, std::string> _fds_buff;
+        std::vector<struct pollfd> _v;
+        int _ns;
+        std::string _cmd;
+
+
 
     public:
+        static bool keep_running;
         Server(int port, std::string password);
         ~Server();
-        void parse_port(std::string a1);
-
+        void init();
+        void build_and_listen();
+        void add_nsocket();
+        void receive_cmd(size_t &i, int current_fd);
+        void handle_command(int fd, const std::string& cmd);
+        Client* getClientByFd(int fd);
 };
