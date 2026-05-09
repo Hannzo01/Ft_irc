@@ -16,6 +16,7 @@ public:
     // Setters
     void setNick(const std::string& nick);
     void setUser(const std::string& user);
+
     void setAuthorized(bool authorized);
     void setCurrentChannel(Channel* channel);
 
@@ -23,6 +24,7 @@ public:
     int getFd() const;
     const std::string& getNick() const;
     const std::string& getUser() const;
+
     bool isAuthorized() const;
     Channel* getCurrentChannel() const;
     std::string& getBuffer();

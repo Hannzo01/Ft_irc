@@ -129,10 +129,8 @@ Client* Server::getClientByFd(int fd)
 
 void Server::handle_command(int fd, const std::string& cmd)
 {
-    std::cout << cmd << std::endl;
     Client* client = getClientByFd(fd);
     if (!client)
         return;
-    // ton partner parse cmd ici
-    // ex: if (cmd.substr(0,4) == "NICK") client->setNick(...)
+
 }
