@@ -53,4 +53,8 @@ class Server
         /*la plus inportant*/
         std::string getPass();
         bool nickIsInUse(std::string nickname)const;
+        void sendReply(Client* client, const std::string& code, 
+                      const std::string& nick, 
+                      const std::string& arg, 
+                      const std::string& message);
 };

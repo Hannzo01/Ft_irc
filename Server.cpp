@@ -1,4 +1,5 @@
 #include "Server.hpp"
+#include <sstream>
 
 bool Server::keep_running = true;
 
@@ -143,6 +144,51 @@ bool Server::nickIsInUse(std::string nickname)const
     return false;
 }
 
+void Server::sendReply(Client* client, const std::string& code, 
+                      const std::string& nick, 
+                      const std::string& arg, 
+                      const std::string& message)
+{
+    std::string fullmsg = std::string(":") + "server"; + " " + code + " " + nick;
+    if (!arg.empty()) fullmsg += " " + arg;
+    fullmsg += " :" + message + "\r\n";
+    client->sendRaw(fullmsg);
+}
+
+
+
+
+
+
+
+
+
+
+bool is_command(std::string command);
+bool checkPassword(std::string& param);
+bool isValidNick(const std::string& nick);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 void Server::handle_command(int fd, const std::string& cmd)
@@ -150,5 +196,122 @@ void Server::handle_command(int fd, const std::string& cmd)
     Client* client = getClientByFd(fd);
     if (!client)
         return;
+    std::string line = cmd;
 
+
+    std::string command;
+    std::string param;
+    std::istringstream iss(line);
+    iss >> command;
+    for (size_t i = 0; i < command.size(); ++i)
+        command[i] = toupper(command[i]);
+    size_t pos = line.find(' ');
+    if (pos == std::string::npos)
+        param =  "";
+    else
+        param =  line.substr(pos + 1);
+    if (!client->getisAuthorized())
+    {
+        if (!is_command(command) || param == "")
+        {
+            sendReply(client, "461",  client->getNick(), 
+                command, "Not enough parameters");
+            return ;
+        }
+        if (command == "PASS")
+        {
+            if (client->getpassFilled())
+            {
+                std::cout << "dejat fait" << std::endl;
+                return;
+            }
+            else if (!checkPassword(param))
+            {
+                sendReply(client, "461", client->getNick(), "PASS", "Not enough parameters");
+                return;
+            }
+            else if (param != _pass)
+            {
+                // ERR_PASSWDMISMATCH (464)
+                // :<server> 464 <nick or *> :Password incorrect
+                sendReply(client, "464", client->getNick(), "", "Password incorrect");
+                return;
+            }
+            else
+                client->setPassFilled(true);
+        }
+        else if (command == "NICK")
+        {
+            if (!client->getpassFilled())
+            {
+                // ERR_NOTREGISTERED (451)
+                sendReply(client, "451", "*", "", "You have not registered");
+                return;
+            }
+            if (param.empty()) {
+                // ERR_NONICKNAMEGIVEN (431)
+                // :<server> 431 <nick or *> :No nickname given
+                sendReply(client, "431",  client->getNick(), "", "No nickname given");
+                return;
+            } else if (nickIsInUse(param)) {
+                // ERR_NICKNAMEINUSE (433)
+                // :<server> 433 <nick or *> <badnick> :Nickname is already in use
+                sendReply(client, "433", client->getNick(), param, "Nickname is already in use");
+                return;
+            } else if (!isValidNick(param)) {
+                // ERR_ERRONEUSNICKNAME (432)
+                // :<server> 432 <nick or *> <badnick> :Erroneous nickname
+                sendReply(client, "432",  client->getNick() , param, "Erroneous nickname");
+                return;
+            } else {
+                client->setNick(param);
+                client->setNickFilled(true);
+            }
+        }
+        else if (command == "USER")
+        {
+            if (!client->getpassFilled())
+            {
+                // ERR_NOTREGISTERED (451)
+                sendReply(client, "451", "*", "", "You have not registered");
+                return;
+            }
+            if (client->gethasUser()) {
+                // ERR_ALREADYREGISTERED (462)
+                sendReply(client, "462",  client->getNick(), "", "You may not reregister");
+                return;
+            } else if (param.empty()) {
+                // ERR_NEEDMOREPARAMS (461)
+                sendReply(client, "461",  client->getNick(), "USER", "Not enough parameters");
+                return;
+
+            } else {
+                std::istringstream pss(param);
+                std::string username, mode, unused, realname;
+                pss >> username >> mode >> unused;
+                std::getline(pss, realname);
+                if (!realname.empty() && realname[0] == ':')
+                    realname = realname.substr(1);
+                client->setUser(username);
+                client->setRealName(realname);
+                client->setHasUser(true);
+            }
+        }
+        else
+        {
+                // ERR_NOTREGISTERED (451)
+            // :<server> 451 <nick or *> :You have not registered
+            sendReply(client, "451", client->getNick(), "", "You have not registered");
+        }
+        if (client->gethasUser() && client->getnickFilled() && client->getpassFilled())
+        {
+            client->setAuthorized(true);
+            std::cout << "client :" << client->getNick() << "succssefly authentified" << std::endl;
+        }
+        
+    }
+    // }else
+    // {
+
+    // }
 }

@@ -3,9 +3,14 @@
 #include "Client.hpp"
 #include "Channel.hpp"
 #include <algorithm>
-
+#include <iostream>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <unistd.h>
 Client::Client(int fd)
-    : _fd(fd), _authorized(false), _passFilled(false),_nickFilled(false), _hasUser(false), _currentChannel(NULL) {}
+    : _fd(fd), _nickname("*"), _passFilled(false),_nickFilled(false),
+    _hasUser(false),_authorized(false),
+    _currentChannel(NULL) {}
 
 Client::~Client() {}
 
@@ -17,9 +22,8 @@ void Client::setCurrentChannel(Channel* channel) { _currentChannel = channel; }
 int Client::getFd() const { return _fd; }
 const std::string& Client::getNick() const { return _nickname; }
 const std::string& Client::getUser() const { return _username; }
-bool Client::isAuthorized() const { return _authorized; }
+bool Client::getisAuthorized() const { return _authorized; }
 Channel* Client::getCurrentChannel() const { return _currentChannel; }
-std::string& Client::getBuffer() { return _buffer; }
 
 void Client::joinChannel(Channel* channel) {
     if (std::find(_joinedChannels.begin(), _joinedChannels.end(), channel) == _joinedChannels.end())
@@ -34,11 +38,11 @@ void Client::leaveChannel(Channel* channel) {
 
 const std::vector<Channel*>& Client::getChannels() const { return _joinedChannels; }
 
-bool Client::hasUser()const
+bool Client::gethasUser()const
 {
     return _hasUser;
 }
-bool Client::passFilled()const
+bool Client::getpassFilled()const
 {
     return _passFilled;
 }
@@ -50,15 +54,24 @@ void Client::setHasUser(bool hasUser)
 {
     _hasUser = hasUser;
 }
-void Client::setPassFilled(bool passfilled)
+void Client::setPassFilled(bool passFilled)
 {
     _passFilled = passFilled;
 }
-bool Client::nickFilled() const
+bool Client::getnickFilled() const
 {
     return _nickFilled;
 }
 void Client::setNickFilled(bool nickffiled)
 {
     _nickFilled = nickffiled;
+}
+
+void Client::sendRaw(const std::string& msg) {
+    // Note: Doesn't handle partial writes or socket errors robustly!
+    ssize_t result = send(_fd, msg.c_str(), msg.length(), 0);
+    if (result < 0) {
+        // Optionally, log or handle error here
+        std::cerr << "sendRaw failed" << std::endl;
+    }
 }
