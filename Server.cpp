@@ -82,6 +82,7 @@ void Server::receive_cmd(size_t &i, int current_fd)
             delfound = _fds_buff[current_fd].find("\r\n");
         } 
     }
+    // send(current_fd, "hadhci khdam ", 10, 0);
 
 }
 

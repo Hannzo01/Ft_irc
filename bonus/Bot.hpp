@@ -17,11 +17,15 @@
 
 class Bot{
     private:
-
+        int _port;
+        std::string _pass;
+        std::string _ip;
     public:
-    Bot();
+    Bot(std::string ip ,int port,  std::string pass);
     ~Bot();
     void init();
 };
 
 #endif
+
+//handle mochkil ctrl c to the server will cause an infinite loop in the bot

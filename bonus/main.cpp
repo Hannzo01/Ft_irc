@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 
     try{
         //parse linput
-        Bot hannzo;
+        Bot hannzo(argv[1], atoi(argv[2]), argv[3]);
         hannzo.init();
     }
     catch(std::exception& e)
