@@ -55,7 +55,6 @@ void Server::receive_cmd(size_t &i, int current_fd)
     int byteread = recv(current_fd , buf, 1023, 0);
     if (byteread <= 0)
     {
-
         for (size_t j = 0; j < clients.size(); j++)
         {
             if (clients[j]->getFd() == current_fd)
@@ -192,13 +191,11 @@ bool isValidNick(const std::string& nick);
 
 
 
-void Server::handle_command(int fd, const std::string& cmd)
+void Server::handle_command(int fd, std::string& line)
 {
     Client* client = getClientByFd(fd);
     if (!client)
         return;
-    std::string line = cmd;
-
 
     std::string command;
     std::string param;
@@ -213,7 +210,13 @@ void Server::handle_command(int fd, const std::string& cmd)
         param =  line.substr(pos + 1);
     if (!client->getisAuthorized())
     {
-        if (!is_command(command) || param == "")
+        if (!is_command(command))
+        { //421 == ERR_unkowncommand hadi bdltha
+            sendReply(client, "421", client->getNick(), command, 
+            "Unkown command");
+            return ;
+        }
+        if (param == "") // fr9thom
         {
             sendReply(client, "461",  client->getNick(), 
                 command, "Not enough parameters");
@@ -221,14 +224,14 @@ void Server::handle_command(int fd, const std::string& cmd)
         }
         if (command == "PASS") // check if pass dejat t3amer
         {
-            if (client->getpassFilled())
+            if (client->getpassFilled() || client->getisAuthorized())
             {
-                std::cout << "dejat fait" << std::endl; /// remembre this 
+                sendReply(client, "462", client->getNick(), "", "You may not reregister");
                 return;
             }
             else if (!checkPassword(param))
             {
-                sendReply(client, "461", client->getNick(), "PASS", "Not enough parameters");
+                sendReply(client, "461", client->getNick(), "PASS ", "Not enough parameters");
                 return;
             }
             else if (param != _pass)
@@ -257,12 +260,12 @@ void Server::handle_command(int fd, const std::string& cmd)
             } else if (nickIsInUse(param)) {
                 // ERR_NICKNAMEINUSE (433)
                 // :<server> 433 <nick or *> <badnick> :Nickname is already in use
-                sendReply(client, "433", client->getNick(), param, "Nickname is already in use");
+                sendReply(client, "433", client->getNick(), param, " Nickname is already in use");
                 return;
             } else if (!isValidNick(param)) {
                 // ERR_ERRONEUSNICKNAME (432)
                 // :<server> 432 <nick or *> <badnick> :Erroneous nickname
-                sendReply(client, "432",  client->getNick() , param, "Erroneous nickname");
+                sendReply(client, "432",  client->getNick() , param, " Erroneous nickname");
                 return;
             } else {
                 client->setNick(param);
@@ -283,7 +286,7 @@ void Server::handle_command(int fd, const std::string& cmd)
                 return;
             } else if (param.empty()) {
                 // ERR_NEEDMOREPARAMS (461)
-                sendReply(client, "461",  client->getNick(), "USER", "Not enough parameters");
+                sendReply(client, "461",  client->getNick(), "USER", " Not enough parameters");
                 return;
 
             } else {
@@ -298,21 +301,53 @@ void Server::handle_command(int fd, const std::string& cmd)
                 client->setHasUser(true);
             }
         }
-        else
-        {
-                // ERR_NOTREGISTERED (451)
-            // :<server> 451 <nick or *> :You have not registered
-            sendReply(client, "451", client->getNick(), "", "You have not registered");
-        }
+        // else
+        // {
+        //         // ERR_NOTREGISTERED (451)
+        //     // :<server> 451 <nick or *> :You have not registered
+        //     sendReply(client, "451", client->getNick(), "", "You have not registered");
+        // }
         if (client->gethasUser() && client->getnickFilled() && client->getpassFilled())
         {
             client->setAuthorized(true);
-            std::cout << "client :" << client->getNick() << "succssefly authentified" << std::endl;
+            std::cout << "client :" << client->getNick() << " Successfully authentified" << std::endl;
         }
         
     }
-    // }else
-    // {
+    else
+    {
+        std::string cmd;
+        std::istringstream iss(line);
+        iss >> cmd;
 
-    // }
+        if (cmd == "PING")
+            handlePing(fd, line);
+        // else if (cmd == "JOIN")
+        //     handleJoin(fd, line);
+        // else if (cmd == "PRIVMSG")
+        //     handlePrivmsg(fd, line);
+        // else if (cmd == "QUIT")
+        //     handleQuit(fd, line);
+        // else if (cmd == "TOPIC")
+        //     handleTopic(fd, line);
+        // else if (cmd == "PART")
+        //     handlePart(fd, line);
+        // else if (cmd == "INVITE")
+        //     handleInvite(fd, line);
+        // else if (cmd == "MODE")
+        //     handleMode(fd, line);
+        // else if (cmd == "PONG")
+        //     handlePong(fd, line);
+        // else if (cmd == "NAMES")
+        //     handleNames(fd, line);
+        // else if (cmd == "LIST")
+        //     handleList(fd, line);
+        // else if (cmd == "KICK")
+        //     handleKick(fd, line);
+
+        else
+        {
+            sendReply(client, "421", client->getNick(), command, "Unknown command");
+        }
+    }
 }

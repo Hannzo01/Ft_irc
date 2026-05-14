@@ -36,8 +36,21 @@ class Server
         std::vector<struct pollfd> _v;
         int _ns;
         std::string _cmd;
-
-
+        
+        
+        // Commands
+        void handlePing(int fd, std::string& line);
+        void handlePong(int fd, std::string& line);
+        void handleJoin(int fd, std::string& line);
+        void handlePart(int fd, std::string& line);
+        void handlePrivmsg(int fd, std::string& line);
+        void handleQuit(int fd, std::string& line);
+        void handleTopic(int fd, std::string& line);
+        void handleInvite(int fd, std::string& line);
+        void handleMode(int fd, std::string& line);
+        void handleNames(int fd, std::string& line);
+        void handleList(int fd, std::string& line);
+        void handleKick(int fd, std::string& line);
 
     public:
         static bool keep_running;
@@ -47,7 +60,7 @@ class Server
         void build_and_listen();
         void add_nsocket();
         void receive_cmd(size_t &i, int current_fd);
-        void handle_command(int fd, const std::string& cmd);
+        void handle_command(int fd, std::string& line);
         Client* getClientByFd(int fd);
 
         /*la plus inportant*/
@@ -57,4 +70,5 @@ class Server
                       const std::string& nick, 
                       const std::string& arg, 
                       const std::string& message);
+
 };
