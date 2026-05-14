@@ -31,6 +31,7 @@ bool checkPassword(std::string& param)
 
     return true;
 }
+
 bool isValidNick(const std::string& nick)
 {
     if (nick.empty() || nick.size() > 9)

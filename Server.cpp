@@ -149,7 +149,8 @@ void Server::sendReply(Client* client, const std::string& code,
                       const std::string& arg, 
                       const std::string& message)
 {
-    std::string fullmsg = std::string(":") + "server"; + " " + code + " " + nick;
+    std::string fullmsg = std::string(":") + "server" + " " + code + " " + nick;
+
     if (!arg.empty()) fullmsg += " " + arg;
     fullmsg += " :" + message + "\r\n";
     client->sendRaw(fullmsg);
@@ -218,11 +219,11 @@ void Server::handle_command(int fd, const std::string& cmd)
                 command, "Not enough parameters");
             return ;
         }
-        if (command == "PASS")
+        if (command == "PASS") // check if pass dejat t3amer
         {
             if (client->getpassFilled())
             {
-                std::cout << "dejat fait" << std::endl;
+                std::cout << "dejat fait" << std::endl; /// remembre this 
                 return;
             }
             else if (!checkPassword(param))
