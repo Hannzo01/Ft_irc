@@ -46,9 +46,18 @@ bool Client::getpassFilled()const
 {
     return _passFilled;
 }
+const std::string& Client::getHost() const
+{
+    return _host;
+}
+
 void Client::setRealName(const std::string& realName)
 {
     _realName = realName;
+}
+void Client::setHost(const std::string& host)
+{
+    _host = host;
 }
 void Client::setHasUser(bool hasUser)
 {

@@ -16,6 +16,7 @@ public:
     // Setters
     void setNick(const std::string& nick);
     void setUser(const std::string& user);
+    void setHost(const std::string& host);
     void setRealName(const std::string& realName);
 
     void setPassFilled(bool passfilled);
@@ -29,7 +30,7 @@ public:
     int getFd() const;
     const std::string& getNick() const;
     const std::string& getUser() const;
-
+    const std::string& getHost() const;
     bool getpassFilled()const;
     bool gethasUser()const;
     bool getnickFilled() const;
@@ -48,6 +49,7 @@ private:
     std::string _nickname;
     std::string _username;
     std::string _realName;
+    std::string _host;
 
     bool _passFilled;
     bool _nickFilled;

@@ -16,6 +16,7 @@
 #include <fcntl.h>
 #include <signal.h>
 #include "Client.hpp"
+#include <sstream>
 #include "Channel.hpp"
 
 
@@ -26,7 +27,7 @@ class Server
 {
     private:
         std::vector<Client *> clients;
-        std::map<std::string, Channel*> _channels; // ✅ pour handle_command
+        std::map<std::string, Channel*> _channels;
 
         int _port;
         std::string _pass;
@@ -37,20 +38,24 @@ class Server
         int _ns;
         std::string _cmd;
         
+
+
         
         // Commands
-        void handlePing(int fd, std::string& line);
-        void handlePong(int fd, std::string& line);
-        void handleJoin(int fd, std::string& line);
-        void handlePart(int fd, std::string& line);
-        void handlePrivmsg(int fd, std::string& line);
-        void handleQuit(int fd, std::string& line);
-        void handleTopic(int fd, std::string& line);
-        void handleInvite(int fd, std::string& line);
-        void handleMode(int fd, std::string& line);
-        void handleNames(int fd, std::string& line);
-        void handleList(int fd, std::string& line);
-        void handleKick(int fd, std::string& line);
+        void handlePass(Client* client, std::string param);
+        void handleNick(Client* client, std::string param);
+        void handleUser(Client* client, std::string param);
+        void handlePing(Client* client, std::string param);
+        void handleQuit(Client* client);
+        // void handlePrivmsg(Client* client, std::string param);
+        // void handlePong(Client* client, std::string param);
+        
+        //SAID <3
+        // void handleJoin(Client* client, std::string param);
+        // void handleTopic(Client* client, std::string param);
+        // void handleInvite(Client* client, std::string param);
+        // void handleMode(Client* client, std::string param);
+        // void handleKick(Client* client, std::string param);
 
     public:
         static bool keep_running;
@@ -70,5 +75,10 @@ class Server
                       const std::string& nick, 
                       const std::string& arg, 
                       const std::string& message);
+
+
+        static bool is_command(std::string command);
+        static bool checkPassword(std::string& param);
+        static bool isValidNick(const std::string& nick);
 
 };

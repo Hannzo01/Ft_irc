@@ -37,10 +37,12 @@ void Server::add_nsocket()
     else
     {
         fcntl(_ns, F_SETFL, O_NONBLOCK);
-        std::cout << "Client connecté ! Son FD est : " << _ns << std::endl;
+        // std::cout << "Client connecté ! Son FD est : " << _ns << std::endl;
         Client* newClient = new Client(_ns);
         clients.push_back(newClient);
-
+        std::string client_ip = inet_ntoa(listenaddr.sin_addr);// ip ktwli string 
+        newClient->setHost(client_ip);
+                            
         struct pollfd spf;
         spf.fd = _ns;
         spf.events = POLLIN;
@@ -52,6 +54,7 @@ void Server::add_nsocket()
 void Server::receive_cmd(size_t &i, int current_fd)
 {
     char buf[1024];
+    memset(buf, 0, sizeof(buf));
     int byteread = recv(current_fd , buf, 1023, 0);
     if (byteread <= 0)
     {
@@ -156,38 +159,55 @@ void Server::sendReply(Client* client, const std::string& code,
 }
 
 
+bool Server::is_command(std::string command)
+{
+    return (command == "PASS" || command == "NICK" || command == "USER");
+}
 
+bool Server::checkPassword(std::string& param)
+{
+    // Remove any leading whitespace
+    size_t first = param.find_first_not_of(" \t\r\n");
+    if (first != std::string::npos)
+        param = param.substr(first);
 
+    // Remove leading ':' (IRC trailing param convention, e.g. PASS :hunter2)
+    if (!param.empty() && param[0] == ':')
+        param = param.substr(1);
 
+    // Should not be empty
+    if (param.empty())
+        return false;
 
+    // IRC line total length max (including CRLF) is 512
+    if (param.length() > 510) // being strict, real limit is >510 with command
+        return false;
 
+    // Optionally, forbid spaces, but RFC allows them if param was given as trailing
+    // If you want to forbid, uncomment this:
+    // if (param.find(' ') != std::string::npos) return false;
 
+    return true;
+}
 
+bool Server::isValidNick(const std::string& nick)
+{
+    if (nick.empty() || nick.size() > 9)
+        return false;
 
-bool is_command(std::string command);
-bool checkPassword(std::string& param);
-bool isValidNick(const std::string& nick);
+    const std::string allowedFirst = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz[]\\`^{}|";
+    const std::string allowedRest  = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-[]\\`^{}|";
 
+    if (allowedFirst.find(nick[0]) == std::string::npos)
+        return false;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    for (size_t i = 1; i < nick.size(); ++i)
+    {
+        if (allowedRest.find(nick[i]) == std::string::npos)
+            return false;
+    }
+    return true;
+}
 
 
 
@@ -222,85 +242,12 @@ void Server::handle_command(int fd, std::string& line)
                 command, "Not enough parameters");
             return ;
         }
-        if (command == "PASS") // check if pass dejat t3amer
-        {
-            if (client->getpassFilled() || client->getisAuthorized())
-            {
-                sendReply(client, "462", client->getNick(), "", "You may not reregister");
-                return;
-            }
-            else if (!checkPassword(param))
-            {
-                sendReply(client, "461", client->getNick(), "PASS ", "Not enough parameters");
-                return;
-            }
-            else if (param != _pass)
-            {
-                // ERR_PASSWDMISMATCH (464)
-                // :<server> 464 <nick or *> :Password incorrect
-                sendReply(client, "464", client->getNick(), "", "Password incorrect");
-                return;
-            }
-            else
-                client->setPassFilled(true);
-        }
+        if (command == "PASS") // check if pass dejat t3amer 
+            handlePass(client, param);
         else if (command == "NICK")
-        {
-            if (!client->getpassFilled())
-            {
-                // ERR_NOTREGISTERED (451)
-                sendReply(client, "451", "*", "", "You have not registered");
-                return;
-            }
-            if (param.empty()) {
-                // ERR_NONICKNAMEGIVEN (431)
-                // :<server> 431 <nick or *> :No nickname given
-                sendReply(client, "431",  client->getNick(), "", "No nickname given");
-                return;
-            } else if (nickIsInUse(param)) {
-                // ERR_NICKNAMEINUSE (433)
-                // :<server> 433 <nick or *> <badnick> :Nickname is already in use
-                sendReply(client, "433", client->getNick(), param, " Nickname is already in use");
-                return;
-            } else if (!isValidNick(param)) {
-                // ERR_ERRONEUSNICKNAME (432)
-                // :<server> 432 <nick or *> <badnick> :Erroneous nickname
-                sendReply(client, "432",  client->getNick() , param, " Erroneous nickname");
-                return;
-            } else {
-                client->setNick(param);
-                client->setNickFilled(true);
-            }
-        }
+            handleNick(client, param);
         else if (command == "USER")
-        {
-            if (!client->getpassFilled())
-            {
-                // ERR_NOTREGISTERED (451)
-                sendReply(client, "451", "*", "", "You have not registered");
-                return;
-            }
-            if (client->gethasUser()) {
-                // ERR_ALREADYREGISTERED (462)
-                sendReply(client, "462",  client->getNick(), "", "You may not reregister");
-                return;
-            } else if (param.empty()) {
-                // ERR_NEEDMOREPARAMS (461)
-                sendReply(client, "461",  client->getNick(), "USER", " Not enough parameters");
-                return;
-
-            } else {
-                std::istringstream pss(param);
-                std::string username, mode, unused, realname;
-                pss >> username >> mode >> unused;
-                std::getline(pss, realname);
-                if (!realname.empty() && realname[0] == ':')
-                    realname = realname.substr(1);
-                client->setUser(username);
-                client->setRealName(realname);
-                client->setHasUser(true);
-            }
-        }
+            handleUser(client, param);
         // else
         // {
         //         // ERR_NOTREGISTERED (451)
@@ -310,44 +257,48 @@ void Server::handle_command(int fd, std::string& line)
         if (client->gethasUser() && client->getnickFilled() && client->getpassFilled())
         {
             client->setAuthorized(true);
-            std::cout << "client :" << client->getNick() << " Successfully authentified" << std::endl;
+            //
+                 /*001    RPL_WELCOME
+              "Welcome to the Internet Relay Network
+               <nick>!<user>@<host>" */
+            std::string wlc_msg = "Welcome to the Internet Relay Network " + client->getNick() + "!" + client->getUser() + "@" + client->getHost();
+            sendReply(client, "001", client->getNick(), "", wlc_msg);
+            // std::cout << "client :" << client->getNick() << " Successfully authentified" << std::endl;
         }
         
     }
     else
     {
-        std::string cmd;
-        std::istringstream iss(line);
-        iss >> cmd;
+        if (command == "PASS")
+            handlePass(client, param);
+        else if (command == "USER")
+            handleUser(client, param);
+        else if (command == "NICK")
+            handleNick(client, param);
+        else if (command == "PING")
+            handlePing(client, param);
+        else if (command == "QUIT")
+            handleQuit(client);
+        // else if (command == "PRIVMSG")
+        //     handlePrivmsg(client, param);
+        // else if (command == "PONG")
+        //     handlePong(client, param);
 
-        if (cmd == "PING")
-            handlePing(fd, line);
-        // else if (cmd == "JOIN")
+        // else if (command == "JOIN")
         //     handleJoin(fd, line);
-        // else if (cmd == "PRIVMSG")
-        //     handlePrivmsg(fd, line);
-        // else if (cmd == "QUIT")
-        //     handleQuit(fd, line);
-        // else if (cmd == "TOPIC")
-        //     handleTopic(fd, line);
-        // else if (cmd == "PART")
-        //     handlePart(fd, line);
-        // else if (cmd == "INVITE")
+        // else if (command == "TOPIC")
+        //     handleTopic(fd, line)
+        // else if (command == "INVITE")
         //     handleInvite(fd, line);
-        // else if (cmd == "MODE")
+        // else if (command == "MODE")
         //     handleMode(fd, line);
-        // else if (cmd == "PONG")
-        //     handlePong(fd, line);
-        // else if (cmd == "NAMES")
-        //     handleNames(fd, line);
-        // else if (cmd == "LIST")
-        //     handleList(fd, line);
-        // else if (cmd == "KICK")
+        // else if (command == "KICK")
         //     handleKick(fd, line);
 
         else
         {
             sendReply(client, "421", client->getNick(), command, "Unknown command");
+            return ;
         }
     }
 }
