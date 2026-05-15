@@ -33,3 +33,11 @@ bool Channel::isOperator(Client* client) const {
     return std::find(_operators.begin(), _operators.end(), client) != _operators.end();
 }
 const std::vector<Client*>& Channel::getMembers() const { return _members; }
+
+// void Channel::broadcast_msg(std::string mesage)
+// {
+//     for (int i = 0; i < _members.size(); i++)
+//     {
+
+//     }
+// }

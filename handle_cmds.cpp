@@ -119,43 +119,73 @@ void prefix()
 
 }
 
-// void Server::handlePrivmsg(Client* client, std::string param){
-    // std::string target; 
-    // std::istringstream iss(param);
-    // iss >> target;
+void Server::handlePrivmsg(Client* client, std::string param)
+{
+    std::string target;
+    std::string message;
+    std::string argument;
+    std::istringstream iss(param);
+    std::string channel_name;
 
-//     int pos = param.find(":", 0);
+    iss >> target;
+    bool nick_found = false;
 
-//     bool nick_found = false;
-//     // first : check si une personne ou une chaine
-//     if (target[0] == '#')
-//     {
+    if (target.empty()) //hnaya hit y9ed ykon param "   " << chekc hdi 
+    {
+        sendReply(client, "411", client->getNick(), "", ":No recipient given");
+        return ;
+    }
+    iss >> argument;
+    if (argument.empty())
+    {
+        sendReply(client, "412", client->getNick(), "", ":No text to send");
+        return ;        
+    }
 
-//     }    // chaine
-//     else
-//     {
-//         for(int i = 0; i < clients.size(); i++)
-//         {
-//             if (target == clients[i]->getNick())
-//             {
-//                 nick_found = true;
-//                 // check if the msg is empty if yes error else we send it 
+    size_t pos = param.find(" :", 0);
+    if (pos != std::string::npos )
+        argument = param.substr(pos + 2);
 
-//             }
-//         }
-//         if (nick_found == false)
-//         {
+    if (target[0] == '#')
+    {
+        // check wach channel kayna si ah seft li kanin kolhom fiha 
+        channel_name = target.substr(1, target.size());
+        // std::map<std::string, Channel*>::iterator it = _channels.find(channel_name);
 
-//         }
-//     }
+        // if (it != _channels.end())
+        // {
 
-//     // si c une personne check si elle existe si non tu envoie au fd errur 401 ERR_NOSUCHNICK
+        // }
+        // else
+        //     sendReply(client, "403", client->getNick(), target, ":No such channel");
+    }
+    else
+    {
+        for(size_t i = 0; i < clients.size(); i++)
+        {
+            if (target == clients[i]->getNick())
+            {
+                nick_found = true;
+                // :<expediteur>!<username>@<host> PRIVMSG <cible> :<le message complet>\r\n
+                message = ":" + client->getNick() + "!" + client->getUser() + "@" + client->getHost() + " PRIVMSG " + target + " :" + argument + "\r\n";
+                send(clients[i]->getFd(), message.c_str(), message.size(), 0);
+                break ;
+            }
+        }
+        if (nick_found == false)
+        {
+            sendReply(client, "401", client->getNick(), target, ":No such nick");
+            return ;
+        }
+    }
 
-//     //si le msg est vide 412 ERR_NOTEXTTOSEND
+    
 
-//     // second si c pour une chaine on envoie le msg pour tout le monde sauf nous meme le serveur
 
-// }
+
+    // second si c pour une chaine on envoie le msg pour tout le monde sauf nous meme le serveur
+
+}
 
 
 // void Server::handlePong(Client* client, std::string param)

@@ -46,11 +46,11 @@ class Server
         void handleNick(Client* client, std::string param);
         void handleUser(Client* client, std::string param);
         void handlePing(Client* client, std::string param);
+        void handlePrivmsg(Client* client, std::string param);
         void handleQuit(Client* client);
-        // void handlePrivmsg(Client* client, std::string param);
         // void handlePong(Client* client, std::string param);
         
-        //SAID <3
+
         // void handleJoin(Client* client, std::string param);
         // void handleTopic(Client* client, std::string param);
         // void handleInvite(Client* client, std::string param);

@@ -26,6 +26,9 @@ public:
     void addOperator(Client* client);
     bool isOperator(Client* client) const;
 
+
+    // void broadcast_msg(std::string mesage);
+
     const std::vector<Client*>& getMembers() const;
 
 private:
