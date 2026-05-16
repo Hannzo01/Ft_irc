@@ -210,6 +210,16 @@ bool Server::isValidNick(const std::string& nick)
     return true;
 }
 
+bool    Server::are_equal(const std::string& a, const std::string& b){
+    if (a.size() != b.size())
+        return false;
+    for (size_t i = 0; i < a.size(); i++)
+    {
+        if (tolower(a[i]) != tolower(b[i]))
+            return false;
+    }
+    return true;
+}
 
 
 void Server::handle_command(int fd, std::string& line)
@@ -280,8 +290,8 @@ void Server::handle_command(int fd, std::string& line)
             handlePing(client, param);
         else if (command == "QUIT")
             handleQuit(client);
-        // else if (command == "PRIVMSG")
-        //     handlePrivmsg(client, param);
+        else if (command == "PRIVMSG")
+            handlePrivmsg(client, param);
         // else if (command == "PONG")
         //     handlePong(client, param);
 

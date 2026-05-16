@@ -40,6 +40,7 @@ class Server
         
 
 
+        static bool are_equal(const std::string& a,const std::string& b);
         
         // Commands
         void handlePass(Client* client, std::string param);

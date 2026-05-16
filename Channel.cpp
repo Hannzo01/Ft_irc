@@ -1,6 +1,6 @@
 
 // Channel.cpp
-
+#include "Server.hpp"
 #include "Channel.hpp"
 #include "Client.hpp"
 #include <algorithm>
@@ -34,10 +34,12 @@ bool Channel::isOperator(Client* client) const {
 }
 const std::vector<Client*>& Channel::getMembers() const { return _members; }
 
-// void Channel::broadcast_msg(std::string mesage)
-// {
-//     for (int i = 0; i < _members.size(); i++)
-//     {
-
-//     }
-// }
+void Channel::broadcast_msg(Client* client, std::string message)
+{
+    for (size_t i = 0; i < _members.size(); i++)
+    {
+        if (_members[i]->getFd() != client->getFd()){
+            send(_members[i]->getFd(), message.c_str(), message.size(), 0);
+        }
+    }
+}

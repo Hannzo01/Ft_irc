@@ -27,7 +27,7 @@ public:
     bool isOperator(Client* client) const;
 
 
-    // void broadcast_msg(std::string mesage);
+    void broadcast_msg(Client*client,  std::string message);
 
     const std::vector<Client*>& getMembers() const;
 

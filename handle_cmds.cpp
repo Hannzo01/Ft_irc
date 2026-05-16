@@ -114,11 +114,6 @@ void Server::handleQuit(Client* client)
     }
 }
 
-void prefix()
-{
-
-}
-
 void Server::handlePrivmsg(Client* client, std::string param)
 {
     std::string target;
@@ -148,22 +143,31 @@ void Server::handlePrivmsg(Client* client, std::string param)
 
     if (target[0] == '#')
     {
-        // check wach channel kayna si ah seft li kanin kolhom fiha 
         channel_name = target.substr(1, target.size());
-        // std::map<std::string, Channel*>::iterator it = _channels.find(channel_name);
-
-        // if (it != _channels.end())
-        // {
-
-        // }
-        // else
-        //     sendReply(client, "403", client->getNick(), target, ":No such channel");
+        for (size_t i = 0; i < channel_name.size(); ++i)
+            channel_name[i] = tolower(channel_name[i]); // ransavihom b to lower f join bch yjini sahl hit channel Salon hia SALON
+        std::map<std::string, Channel*>::iterator it = _channels.find(channel_name);
+        if (it != _channels.end())
+        {
+            if (!it->second->hasMember(client))
+                sendReply(client, "404", client->getNick(), target, ":Cannot send to channel");
+            else
+            {
+                message = ":" + client->getNick() + "!" + client->getUser() + "@" + client->getHost() + " PRIVMSG " + target + " :" + argument + "\r\n";
+                it->second->broadcast_msg(client, message);
+            }
+        }
+        else
+        {
+            sendReply(client, "403", client->getNick(), target, ":No such channel");
+            return;
+        }
     }
     else
     {
         for(size_t i = 0; i < clients.size(); i++)
         {
-            if (target == clients[i]->getNick())
+            if (are_equal(target, clients[i]->getNick()) == true)
             {
                 nick_found = true;
                 // :<expediteur>!<username>@<host> PRIVMSG <cible> :<le message complet>\r\n
@@ -178,13 +182,6 @@ void Server::handlePrivmsg(Client* client, std::string param)
             return ;
         }
     }
-
-    
-
-
-
-    // second si c pour une chaine on envoie le msg pour tout le monde sauf nous meme le serveur
-
 }
 
 
