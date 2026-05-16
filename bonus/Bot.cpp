@@ -43,5 +43,10 @@ void Bot::init()
         else
             buffer = buffer.append(buff, byteread);
         std::cout << buffer << std::endl;
+        // :<expediteur>!<user>@<host> PRIVMSG snowbot :!joke\r\n
+        // hna check wch kayn privmsg 
+        // si oui nseftlo PRIVMSG <expediteur> :Pourquoi les plongeurs plongent-ils toujours en arrière et jamais en avant ? Parce que sinon ils tombent dans le bateau.\r\n
+        
+
     }
 }
