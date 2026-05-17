@@ -5,6 +5,21 @@ Bot::Bot( std::string ip, int port, std::string pass) : _ip(ip) , _port(port), _
 
 Bot::~Bot(){
 }
+void Bot::printSnowbotBanner() 
+{
+    std::cout << "\033[1;37m";
+    std::cout << std::endl;
+    std::cout << " ʰᵉʸ ⁱ ᵃᵐ ˢⁿᵒʷᵇᵒᵗ \033[1;22m"  <<std::endl;
+    std::cout << "      .-\"\"-.      " << std::endl;
+    std::cout << "     / ,  , \\     " << std::endl;
+    std::cout << "    |  \\__/  |    " << std::endl;
+    std::cout << "     \\_    _/     " << std::endl;
+    std::cout << "     /      \\     " << std::endl;
+    std::cout << "    |        |    " << std::endl;
+    std::cout << "     \\      /     " << std::endl;
+    std::cout << "      `----`      " << std::endl;
+    std::cout << "\033[0m" << std::endl; // Remet la couleur par défaut
+}
 
 std::string Bot::get_a_random_joke(){
  std::string jokes[4];
@@ -31,8 +46,10 @@ void Bot::init()
     Server_addr.sin_port = (htons(_port));
     Server_addr.sin_family = (AF_INET);
 
-    if (connect(ClientSocket, (sockaddr *)&Server_addr, sizeof(Server_addr)) == -1)
-        std::cerr << "Client failed" << std::endl;
+    if (connect(ClientSocket, (sockaddr *)&Server_addr, sizeof(Server_addr)) == -1) {
+            close(ClientSocket);
+            throw std::runtime_error("Client failed to connect to server");
+        }
 
 
     std::string PASS_cmd = "PASS " + _pass + "\r\n";
@@ -47,7 +64,8 @@ void Bot::init()
 
     std::string buffer;
     std::string message;
-   
+   printSnowbotBanner();
+
     while (1)
     {
         char buff[1024];
@@ -71,17 +89,17 @@ void Bot::init()
                 std::string pong_msg = "PONG :localhost\r\n"; 
                 send(ClientSocket, pong_msg.c_str(), pong_msg.size(), 0);
             }
-            size_t joke_pos = buffer.find("!joke\r\n");
+            size_t joke_pos = line.find("!joke\r\n");
             if (joke_pos != std::string::npos)
             {
-                int colon = buffer.find(":");
-                int exclamation_mark = buffer.find("!");
-                std::string target = buffer.substr(colon + 1, exclamation_mark - colon - 1);
+                int colon = line.find(":");
+                int exclamation_mark = line.find("!");
+                std::string target = line.substr(colon + 1, exclamation_mark - colon - 1);
                 std::string joke = get_a_random_joke();
                 message = "PRIVMSG " + target + " :" + joke + "\r\n";
                 send(ClientSocket, message.c_str(), message.size(), 0);
             }
+            buffer.erase(0, pos + 2);
         }
-        buffer.erase(0, pos + 2);
     }
 }

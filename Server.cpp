@@ -13,7 +13,8 @@ void    Server::init()
 {
     struct sockaddr_in localaddr;
     memset(&localaddr, 0, sizeof(localaddr));
-    localaddr.sin_addr.s_addr = inet_addr("127.0.0.1"); //just for now; testing on my machine lese i need to put a macro instead of direct value
+    // localaddr.sin_addr.s_addr = inet_addr("127.0.0.1"); //just for now; testing on my machine lese i need to put a macro instead of direct value
+    localaddr.sin_addr.s_addr = INADDR_ANY;
     localaddr.sin_family = AF_INET;
     localaddr.sin_port = htons(_port);
     // localaddr.sin_zero  NEED TO READ MORE ABOUT THIS VAR
@@ -79,6 +80,11 @@ void Server::receive_cmd(size_t &i, int current_fd)
         while (delfound != std::string::npos)
         {
             _cmd = _fds_buff[current_fd].substr(0, delfound);
+
+
+            std::cout << "[PARSER] Commande extraite : [" << _cmd << "]" << std::endl;
+
+            
             handle_command(current_fd, _cmd); // you need to build this
 
             _fds_buff[current_fd].erase(0,delfound + 2);

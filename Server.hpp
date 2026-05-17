@@ -81,5 +81,5 @@ class Server
         static bool is_command(std::string command);
         static bool checkPassword(std::string& param);
         static bool isValidNick(const std::string& nick);
-
+        static void printFtIrcBanner();
 };

@@ -17,7 +17,8 @@
 #include <ctime>
 #include <map>
 
-class Bot{
+class Bot
+{
     private:
         std::string _ip;
         int _port;
@@ -27,6 +28,7 @@ class Bot{
     ~Bot();
     void init();
     static std::string get_a_random_joke();
+    static void printSnowbotBanner();
 };
 
 #endif

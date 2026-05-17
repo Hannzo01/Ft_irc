@@ -14,6 +14,20 @@ int parse_port(std::string a1)
         return port;
 }
 
+
+void Server::printFtIrcBanner() {
+    // \033[1;36m met le texte en Cyan brillant
+    std::cout << "\033[1;36m";
+    std::cout << "  __ _        _          " << std::endl;
+    std::cout << " / _| |      (_)         " << std::endl;
+    std::cout << "| |_| |_      _ _ __ ___ " << std::endl;
+    std::cout << "|  _| __|____| | '__/ __|" << std::endl;
+    std::cout << "| | | ||_____| | | | (__ " << std::endl;
+    std::cout << "|_|  \\__|    |_|_|  \\___|" << std::endl;
+    std::cout << "                         " << std::endl;
+    std::cout << " Server is starting...   " << std::endl;
+    std::cout << "\033[0m"; // Remet la couleur par défaut
+}
 int main(int argc, char *argv[])
 {
     // 1024kk
@@ -27,7 +41,7 @@ int main(int argc, char *argv[])
         if (strlen(argv[2]) == 0)
             throw std::logic_error("Enter a password");
         Server irc(port, argv[2]);
-
+        irc.printFtIrcBanner();
         irc.init();
         irc.build_and_listen();
 
