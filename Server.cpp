@@ -37,11 +37,11 @@ void Server::add_nsocket()
     else
     {
         fcntl(_ns, F_SETFL, O_NONBLOCK);
-        // std::cout << "Client connecté ! Son FD est : " << _ns << std::endl;
         Client* newClient = new Client(_ns);
         clients.push_back(newClient);
         std::string client_ip = inet_ntoa(listenaddr.sin_addr);// ip ktwli string 
         newClient->setHost(client_ip);
+        std::cout << "[SERVER] New Connection ! FD: " << _ns << " IP: " << client_ip << std::endl;
                             
         struct pollfd spf;
         spf.fd = _ns;
@@ -241,12 +241,12 @@ void Server::handle_command(int fd, std::string& line)
         param =  line.substr(pos + 1);
     if (!client->getisAuthorized())
     {
-        if (!is_command(command))
+        if (!is_command(command)) // hnaya ila drt privmsg 9bl pass rtl3 unkown comand wlk mkhshach tl3 unkown command fixiha hadi
         { //421 == ERR_unkowncommand hadi bdltha
             sendReply(client, "421", client->getNick(), command, 
             "Unkown command");
             return ;
-        }
+        } 
         if (param == "") // fr9thom
         {
             sendReply(client, "461",  client->getNick(), 

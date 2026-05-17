@@ -13,17 +13,20 @@
 #include <vector>
 #include <ctype.h>
 #include <algorithm>
+#include <cstdlib>
+#include <ctime>
 #include <map>
 
 class Bot{
     private:
+        std::string _ip;
         int _port;
         std::string _pass;
-        std::string _ip;
     public:
-    Bot(std::string ip ,int port,  std::string pass);
+    Bot(std::string ip, int port, std::string pass);
     ~Bot();
     void init();
+    static std::string get_a_random_joke();
 };
 
 #endif
