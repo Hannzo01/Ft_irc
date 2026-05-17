@@ -52,11 +52,11 @@ class Server
         // void handlePong(Client* client, std::string param);
         
 
-        // void handleJoin(Client* client, std::string param);
-        // void handleTopic(Client* client, std::string param);
+        void handleJoin(Client* client, std::string param);
+        void handleTopic(Client* client, std::string param);
+        void handleKick(Client* client, std::string param);
         // void handleInvite(Client* client, std::string param);
         // void handleMode(Client* client, std::string param);
-        // void handleKick(Client* client, std::string param);
 
     public:
         static bool keep_running;
@@ -82,4 +82,7 @@ class Server
         static bool checkPassword(std::string& param);
         static bool isValidNick(const std::string& nick);
 
+    ///*channels handler*///
+    Channel* getChannel(std::string name) const;
+    void addChannel(std::string chname, Channel* newChannel);
 };
