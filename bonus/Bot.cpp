@@ -89,16 +89,27 @@ void Bot::init()
                 std::string pong_msg = "PONG :localhost\r\n"; 
                 send(ClientSocket, pong_msg.c_str(), pong_msg.size(), 0);
             }
-            size_t joke_pos = line.find("!joke\r\n");
-            if (joke_pos != std::string::npos)
+            size_t text_start = line.find(" :");
+            if (text_start != std::string::npos)
             {
-                int colon = line.find(":");
-                int exclamation_mark = line.find("!");
-                std::string target = line.substr(colon + 1, exclamation_mark - colon - 1);
-                std::string joke = get_a_random_joke();
-                message = "PRIVMSG " + target + " :" + joke + "\r\n";
-                send(ClientSocket, message.c_str(), message.size(), 0);
+
+                std::string text = line.substr(text_start + 2);
+
+                if (text == "!joke\r\n" || text.find("!joke ") == 0)
+                {
+                    size_t colon = line.find(":");
+                    size_t exclamation_mark = line.find("!");
+
+                    if (colon != std::string::npos && exclamation_mark != std::string::npos && colon < exclamation_mark)
+                    {
+                        std::string target = line.substr(colon + 1, exclamation_mark - colon - 1);
+                        std::string joke = get_a_random_joke();
+                        message = "PRIVMSG " + target + " :" + joke + "\r\n";
+                        send(ClientSocket, message.c_str(), message.size(), 0);
+                    }
+                }
             }
+
             buffer.erase(0, pos + 2);
         }
     }

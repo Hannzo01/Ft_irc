@@ -241,6 +241,22 @@ bool    Server::are_equal(const std::string& a, const std::string& b){
     return true;
 }
 
+Channel* Server::getChannel(std::string name) const {
+    std::map<std::string, Channel*>::const_iterator it = _channels.find(name);
+    if (it != _channels.end())
+        return it->second;
+    return NULL;
+}
+
+void Server::addChannel(std::string chname, Channel* newChannel) {
+    _channels[chname] = newChannel;
+}
+
+
+// bool allCmd(std::string cmd)
+// {
+//     return  cmd == "PRIVMSG" || cmd == "JOIN" || cmd == "KICK" || cmd == "MODE" || cmd == "TOPIC" || cmd == "INVITE";
+// }
 
 void Server::handle_command(int fd, std::string& line)
 {
@@ -261,12 +277,22 @@ void Server::handle_command(int fd, std::string& line)
         param =  line.substr(pos + 1);
     if (!client->getisAuthorized())
     {
+        // if (allCmd(command))
+        // {
+        //     sendReply(client, "421", client->getNick(), command, 
+        //     "");
+        //     return ;
+
+        // }
+        // else
+
+
         if (!is_command(command)) // hnaya ila drt privmsg 9bl pass rtl3 unkown comand wlk mkhshach tl3 unkown command fixiha hadi
         { //421 == ERR_unkowncommand hadi bdltha
             sendReply(client, "421", client->getNick(), command, 
             "Unkown command");
             return ;
-        } 
+        }
         if (param == "") // fr9thom
         {
             sendReply(client, "461",  client->getNick(), 
@@ -315,16 +341,16 @@ void Server::handle_command(int fd, std::string& line)
         // else if (command == "PONG")
         //     handlePong(client, param);
 
-        // else if (command == "JOIN")
-        //     handleJoin(fd, line);
-        // else if (command == "TOPIC")
-        //     handleTopic(fd, line)
+        else if (command == "JOIN")
+            handleJoin(client, param);
+        else if (command == "TOPIC")
+            handleTopic(client, param);
         // else if (command == "INVITE")
         //     handleInvite(fd, line);
         // else if (command == "MODE")
         //     handleMode(fd, line);
-        // else if (command == "KICK")
-        //     handleKick(fd, line);
+        else if (command == "KICK")
+            handleKick(client, param);
 
         else
         {
