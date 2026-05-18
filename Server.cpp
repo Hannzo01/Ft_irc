@@ -106,7 +106,7 @@ void Server::build_and_listen()
     while (keep_running)
     {
         if (poll(&_v[0], _v.size(), -1) < 0)
-            throw std::runtime_error("Poll failed");
+            break ;
         for (size_t i = 0; i < _v.size(); i++)
         {
             if (_v[i].revents & POLLIN)
@@ -120,12 +120,26 @@ void Server::build_and_listen()
             }
         }
     }
+    for (size_t i = 0; i < clients.size(); i++)
+    {
+        delete clients[i];
+    }
+    clients.clear();
+
+    std::map<std::string, Channel*>::iterator it;
+    for (it = _channels.begin(); it != _channels.end(); ++it)
+    {
+        delete it->second;
+    }
+    _channels.clear();
 
     for (size_t i = 0; i < _v.size(); i++)
     {
         close(_v[i].fd);
     }
+    _v.clear();
 }
+
 
 Client* Server::getClientByFd(int fd)
 {

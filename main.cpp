@@ -1,5 +1,12 @@
 #include "Server.hpp"
 
+void signal_handler(int signum) {
+    (void)signum;
+    std::cout << "\n[SERVER] Arrêt demandé, fermeture propre en cours..." << std::endl;
+    Server::keep_running = false;
+}
+
+
 int parse_port(std::string a1)
 {
     int port = atoi(a1.c_str());
@@ -30,6 +37,7 @@ void Server::printFtIrcBanner() {
 }
 int main(int argc, char *argv[])
 {
+    signal(SIGINT, signal_handler);
     // 1024kk
    if (argc != 3) {
         std::cerr << "Usage: ./ircserv <port> <password>" << std::endl;
