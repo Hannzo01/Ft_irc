@@ -32,6 +32,7 @@ void Server::handleJoin(Client* client, std::string param)
         std::string chname = channels[i];
         if (chname.empty() || chname[0] != '#')
             continue;
+        chname = chname.substr(1);
         Channel* channel = getChannel(chname);
         bool newly_created = false;
         if (!channel) {

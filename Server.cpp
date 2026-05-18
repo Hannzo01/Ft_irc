@@ -346,8 +346,8 @@ void Server::handle_command(int fd, std::string& line)
             handleJoin(client, param);
         else if (command == "TOPIC")
             handleTopic(client, param);
-        // else if (command == "INVITE")
-        //     handleInvite(fd, line);
+        else if (command == "INVITE")
+            handleInvite(client, param);
         // else if (command == "MODE")
         //     handleMode(fd, line);
         else if (command == "KICK")

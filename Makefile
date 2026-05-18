@@ -3,7 +3,7 @@ CXX = c++
 CXXFLAGS = -Wall -Wextra -Werror -std=c++98
 SRC = main.cpp Server.cpp Channel.cpp Client.cpp \
 	handle_cmds.cpp \
-	commands/topic.cpp commands/join.cpp commands/kick.cpp
+	commands/topic.cpp commands/join.cpp commands/kick.cpp commands/invite.cpp commands/mode.cpp 
 OBJ = $(SRC:.cpp=.o)
 
 all : $(NAME)
