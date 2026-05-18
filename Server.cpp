@@ -3,58 +3,61 @@
 
 bool Server::keep_running = true;
 
-Server::Server(int port, std::string password) : _port(port), _pass(password){
-}
+Server::Server(int port, std::string password) : _port(port), _password(password){}
 
-Server::~Server() {
-}
+Server::~Server() {}
 
-void    Server::init()
+void    Server::setupSocket()
 {
     struct sockaddr_in localaddr;
     memset(&localaddr, 0, sizeof(localaddr));
-    // localaddr.sin_addr.s_addr = inet_addr("127.0.0.1"); //just for now; testing on my machine lese i need to put a macro instead of direct value
     localaddr.sin_addr.s_addr = INADDR_ANY;
     localaddr.sin_family = AF_INET;
     localaddr.sin_port = htons(_port);
     // localaddr.sin_zero  NEED TO READ MORE ABOUT THIS VAR
-    _ss = socket(AF_INET, SOCK_STREAM ,0);
-    if (_ss < 0)
+
+    _serverSocket = socket(AF_INET, SOCK_STREAM ,0);
+    if (_serverSocket < 0)
         throw std::runtime_error("Sokcet failed");
-    fcntl(_ss, F_SETFL, O_NONBLOCK);
+    fcntl(_serverSocket, F_SETFL, O_NONBLOCK);
+
     int opt = 1;
-    setsockopt(_ss, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
-    if (bind(_ss, (sockaddr *)&localaddr, sizeof(localaddr)) < 0)
+    setsockopt(_serverSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+    if (bind(_serverSocket, (sockaddr *)&localaddr, sizeof(localaddr)) < 0)
         throw std::runtime_error("Bind failed");       
 }
 
-void Server::add_nsocket()
+void Server::acceptNewConnection()
 {
+    int newSocket;
     struct sockaddr_in listenaddr;
     socklen_t len = sizeof(listenaddr);
-    _ns = accept(_ss, (sockaddr*) &listenaddr, &len);
-    if (_ns < 0)
+    newSocket = accept(_serverSocket, (sockaddr*) &listenaddr, &len);
+
+    if (newSocket < 0)
         std::cerr << "Accept failed" << std::endl;
     else
     {
-        fcntl(_ns, F_SETFL, O_NONBLOCK);
-        Client* newClient = new Client(_ns);
+        fcntl(newSocket, F_SETFL, O_NONBLOCK);
+        Client* newClient = new Client(newSocket);
         clients.push_back(newClient);
         std::string client_ip = inet_ntoa(listenaddr.sin_addr);// ip ktwli string 
         newClient->setHost(client_ip);
-        std::cout << "[SERVER] New Connection ! FD: " << _ns << " IP: " << client_ip << std::endl;
+        std::cout << "[SERVER] New Connection ! FD: " << newSocket << " IP: " << client_ip << std::endl;
                             
         struct pollfd spf;
-        spf.fd = _ns;
+        spf.fd = newSocket;
         spf.events = POLLIN;
-        _v.push_back(spf);
-        _fds_buff[_ns] = "";
+        _pollFds.push_back(spf);
+        _clientBuffers[newSocket] = "";
     }
 }
 
-void Server::receive_cmd(size_t &i, int current_fd)
+void Server::readDataFromClient(size_t &i, int current_fd)
 {
-    char buf[1024];
+    std::string _cmd;
+    char        buf[1024];
+
     memset(buf, 0, sizeof(buf));
     int byteread = recv(current_fd , buf, 1023, 0);
     if (byteread <= 0)
@@ -68,18 +71,18 @@ void Server::receive_cmd(size_t &i, int current_fd)
                 break;
             }
         }
-        _fds_buff.erase(current_fd);
+        _clientBuffers.erase(current_fd);
         close(current_fd);
-        _v.erase(_v.begin() + i); // n7ydha mn vector
+        _pollFds.erase(_pollFds.begin() + i); // n7ydha mn vector
         i--; //v kyn9slo size n9si bch mtn9zich chi client
     }
     else
     {
-        _fds_buff[current_fd].append(buf, byteread);
-        size_t delfound = _fds_buff[current_fd].find("\r\n");
+        _clientBuffers[current_fd].append(buf, byteread);
+        size_t delfound = _clientBuffers[current_fd].find("\r\n");
         while (delfound != std::string::npos)
         {
-            _cmd = _fds_buff[current_fd].substr(0, delfound);
+            _cmd = _clientBuffers[current_fd].substr(0, delfound);
 
 
             std::cout << "[PARSER] Commande extraite : [" << _cmd << "]" << std::endl;
@@ -87,36 +90,34 @@ void Server::receive_cmd(size_t &i, int current_fd)
             
             handle_command(current_fd, _cmd); // you need to build this
 
-            _fds_buff[current_fd].erase(0,delfound + 2);
-            delfound = _fds_buff[current_fd].find("\r\n");
+            _clientBuffers[current_fd].erase(0,delfound + 2);
+            delfound = _clientBuffers[current_fd].find("\r\n");
         } 
     }
-    // send(current_fd, "hadhci khdam ", 10, 0);
-
 }
 
-void Server::build_and_listen()
+void Server::runEventLoop()
 {
-    _spfd.fd = _ss;
-    _spfd.events = POLLIN;
-    _v.push_back(_spfd);
+    _serverPollFd.fd = _serverSocket;
+    _serverPollFd.events = POLLIN;
+    _pollFds.push_back(_serverPollFd);
 
-    if (listen(_ss, 0) < 0)
+    if (listen(_serverSocket, 0) < 0)
         throw std::runtime_error("Listen failed");// taille dyal file dattente < 5 si 0 on laisse le system decide 
     while (keep_running)
     {
-        if (poll(&_v[0], _v.size(), -1) < 0)
+        if (poll(&_pollFds[0], _pollFds.size(), -1) < 0)
             break ;
-        for (size_t i = 0; i < _v.size(); i++)
+        for (size_t i = 0; i < _pollFds.size(); i++)
         {
-            if (_v[i].revents & POLLIN)
+            if (_pollFds[i].revents & POLLIN)
             {
-                int current_fd = _v[i].fd;
-                if (current_fd == _ss)
-                    add_nsocket();
+                int current_fd = _pollFds[i].fd;
+                if (current_fd == _serverSocket)
+                    acceptNewConnection();
 
                 else
-                    receive_cmd(i, current_fd);
+                    readDataFromClient(i, current_fd);
             }
         }
     }
@@ -133,11 +134,11 @@ void Server::build_and_listen()
     }
     _channels.clear();
 
-    for (size_t i = 0; i < _v.size(); i++)
+    for (size_t i = 0; i < _pollFds.size(); i++)
     {
-        close(_v[i].fd);
+        close(_pollFds[i].fd);
     }
-    _v.clear();
+    _pollFds.clear();
 }
 
 
@@ -152,9 +153,9 @@ Client* Server::getClientByFd(int fd)
 }
 
 
-std::string Server::getPass()
+std::string Server::getPassword()
 {
-    return _pass;
+    return _password;
 }
 
 bool Server::nickIsInUse(std::string nickname)const
@@ -311,7 +312,7 @@ void Server::handle_command(int fd, std::string& line)
         //     // :<server> 451 <nick or *> :You have not registered
         //     sendReply(client, "451", client->getNick(), "", "You have not registered");
         // }
-        if (client->gethasUser() && client->getnickFilled() && client->getpassFilled())
+        if (client->gethasUser() && client->getnickFilled() && client->getPasswordFilled())
         {
             client->setAuthorized(true);
             //

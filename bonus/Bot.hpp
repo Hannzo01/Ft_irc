@@ -22,15 +22,15 @@ class Bot
     private:
         std::string _ip;
         int _port;
-        std::string _pass;
+        std::string _password;
     public:
     Bot(std::string ip, int port, std::string pass);
     ~Bot();
-    void init();
+    void setupSocket();
     static std::string get_a_random_joke();
     static void printSnowbotBanner();
 };
 
 #endif
 
-//handle mochkil ctrl c to the server will cause an infinite loop in the bot
+//handle mochkil ctrl c to the server will cause an infsetupSockete loop in the bot

@@ -31,7 +31,7 @@ public:
     const std::string& getNick() const;
     const std::string& getUser() const;
     const std::string& getHost() const;
-    bool getpassFilled()const;
+    bool getPasswordFilled()const;
     bool gethasUser()const;
     bool getnickFilled() const;
     bool getisAuthorized() const;
@@ -44,6 +44,7 @@ public:
     const std::vector<Channel*>& getChannels() const;
 
     void sendRaw(const std::string& msg);
+    
 private:
     int _fd;                         // Socket file descriptor
     std::string _nickname;
@@ -51,7 +52,7 @@ private:
     std::string _realName;
     std::string _host;
 
-    bool _passFilled;
+    bool _passwordFilled;
     bool _nickFilled;
     bool _hasUser;
 

@@ -2,7 +2,7 @@
 
 void Server::handleNick(Client* client, std::string param)
 {
-     if (!client->getpassFilled())
+     if (!client->getPasswordFilled())
     {
         // ERR_NOTREGISTERED (451)
         sendReply(client, "451", "*", "", "You have not registered");
@@ -31,7 +31,7 @@ void Server::handleNick(Client* client, std::string param)
 
 void Server::handlePass(Client* client, std::string param)
 {
-    if (client->getpassFilled() ) // || client->getisAuthorized() hadi commentitha huit mymknch ykon autoriser o ydkhl o awl cmd hia     if (!client->getisAuthorized())
+    if (client->getPasswordFilled() ) // || client->getisAuthorized() hadi commentitha huit mymknch ykon autoriser o ydkhl o awl cmd hia     if (!client->getisAuthorized())
     {
         sendReply(client, "462", client->getNick(), "", "You may not reregister");
         return;
@@ -41,9 +41,9 @@ void Server::handlePass(Client* client, std::string param)
         sendReply(client, "461", client->getNick(), "PASS ", "Not enough parameters");
         return;
     }
-    else if (param != _pass)
+    else if (param != _password)
     {
-        // ERR_PASSWDMISMATCH (464)
+        // ERR_passwordWDMISMATCH (464)
         // :<server> 464 <nick or *> :Password incorrect
         sendReply(client, "464", client->getNick(), "", "Password incorrect");
         return;
@@ -54,7 +54,7 @@ void Server::handlePass(Client* client, std::string param)
 
 void Server::handleUser(Client* client, std::string param)
 {
-    if (!client->getpassFilled())
+    if (!client->getPasswordFilled())
     {
         // ERR_NOTREGISTERED (451)
         sendReply(client, "451", "*", "", "You have not registered");
@@ -94,13 +94,13 @@ void Server::handleQuit(Client* client)
 {
     //nderha b chi var hsn
 
-    // for (size_t i = 0; i < _v.size() ; i++)
+    // for (size_t i = 0; i < _pollFds.size() ; i++)
     // {
-    //     if (_v[i].fd == client->getFd())
+    //     if (_pollFds[i].fd == client->getFd())
     //     {
-    //         _fds_buff.erase(_v[i].fd);
-    //         close(_v[i].fd);
-    //         _v.erase(_v.begin() + i);
+    //         _clientBuffers.erase(_pollFds[i].fd);
+    //         close(_pollFds[i].fd);
+    //         _pollFds.erase(_pollFds.begin() + i);
     //         break;
     //     }
     // }

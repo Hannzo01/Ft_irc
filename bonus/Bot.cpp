@@ -1,6 +1,6 @@
 #include "Bot.hpp"
 
-Bot::Bot( std::string ip, int port, std::string pass) : _ip(ip) , _port(port), _pass(pass)  {
+Bot::Bot( std::string ip, int port, std::string pass) : _ip(ip) , _port(port), _password(pass)  {
 }
 
 Bot::~Bot(){
@@ -33,7 +33,7 @@ std::string Bot::get_a_random_joke(){
     return jokes[num];
 }
 
-void Bot::init()
+void Bot::setupSocket()
 {
     srand(time(NULL));
     int ClientSocket = socket(AF_INET, SOCK_STREAM, 0);
@@ -52,7 +52,7 @@ void Bot::init()
         }
 
 
-    std::string PASS_cmd = "PASS " + _pass + "\r\n";
+    std::string PASS_cmd = "PASS " + _password + "\r\n";
     send(ClientSocket, PASS_cmd.c_str(), PASS_cmd.length(), 0);
 
     std::string NICK_cmd = "NICK Snowbot\r\n";

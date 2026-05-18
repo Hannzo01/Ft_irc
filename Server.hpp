@@ -26,63 +26,68 @@ class Channel;
 class Server
 {
     private:
-        std::vector<Client *> clients;
+
+        std::vector<Client *>           clients;
+        std::vector<struct pollfd>      _pollFds;
+        std::map<int, std::string>      _clientBuffers;
         std::map<std::string, Channel*> _channels;
 
-        int _port;
-        std::string _pass;
-        int _ss;
-        struct pollfd _spfd;
-        std::map<int, std::string> _fds_buff;
-        std::vector<struct pollfd> _v;
-        int _ns;
-        std::string _cmd;
+        int             _port;
+        int             _serverSocket;
+        struct pollfd   _serverPollFd;
+        std::string     _password;
         
-
 
         static bool are_equal(const std::string& a,const std::string& b);
+
         
         // Commands
-        void handlePass(Client* client, std::string param);
-        void handleNick(Client* client, std::string param);
-        void handleUser(Client* client, std::string param);
-        void handlePing(Client* client, std::string param);
-        void handlePrivmsg(Client* client, std::string param);
-        void handleQuit(Client* client);
+        void    handlePass(Client* client, std::string param);
+        void    handleNick(Client* client, std::string param);
+        void    handleUser(Client* client, std::string param);
+        void    handlePing(Client* client, std::string param);
+        void    handlePrivmsg(Client* client, std::string param);
+        void    handleQuit(Client* client);
         // void handlePong(Client* client, std::string param);
-        
-
-        void handleJoin(Client* client, std::string param);
-        void handleTopic(Client* client, std::string param);
-        void handleKick(Client* client, std::string param);
+        void    handleJoin(Client* client, std::string param);
+        void    handleTopic(Client* client, std::string param);
+        void    handleKick(Client* client, std::string param);
         // void handleInvite(Client* client, std::string param);
         // void handleMode(Client* client, std::string param);
 
     public:
-        static bool keep_running;
+
         Server(int port, std::string password);
         ~Server();
-        void init();
-        void build_and_listen();
-        void add_nsocket();
-        void receive_cmd(size_t &i, int current_fd);
-        void handle_command(int fd, std::string& line);
-        Client* getClientByFd(int fd);
 
-        /*la plus inportant*/
-        std::string getPass();
-        bool nickIsInUse(std::string nickname)const;
+        void    setupSocket();
+        void    runEventLoop();
+        void    acceptNewConnection();
+        void    readDataFromClient(size_t &i, int current_fd);
+        void    handle_command(int fd, std::string& line);
+
+
+        bool        nickIsInUse(std::string nickname)const;
+        Client*     getClientByFd(int fd);        
+        std::string getPassword();
+
+        
         void sendReply(Client* client, const std::string& code, 
-                      const std::string& nick, 
-                      const std::string& arg, 
-                      const std::string& message);
+            const std::string& nick, 
+            const std::string& arg, 
+            const std::string& message);
+        
+        
+        static bool     keep_running;
+        static bool     is_command(std::string command);
+        static bool     checkPassword(std::string& param);
+        static bool     isValidNick(const std::string& nick);
+        static void     printFtIrcBanner();
+        static void     signal_handler(int signum);
+        static int      parse_port(std::string a1);
+        
+        ///*channels handler*///
+        Channel*    getChannel(std::string name) const;
+        void        addChannel(std::string chname, Channel* newChannel);
 
-
-        static bool is_command(std::string command);
-        static bool checkPassword(std::string& param);
-        static bool isValidNick(const std::string& nick);
-        static void printFtIrcBanner();
-    ///*channels handler*///
-    Channel* getChannel(std::string name) const;
-    void addChannel(std::string chname, Channel* newChannel);
 };

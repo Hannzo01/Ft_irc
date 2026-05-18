@@ -1,13 +1,12 @@
 #include "Server.hpp"
 
-void signal_handler(int signum) {
+void Server::signal_handler(int signum) {
     (void)signum;
-    std::cout << "\n[SERVER] Arrêt demandé, fermeture propre en cours..." << std::endl;
     Server::keep_running = false;
 }
 
 
-int parse_port(std::string a1)
+int Server::parse_port(std::string a1)
 {
     int port = atoi(a1.c_str());
     for (size_t i = 0; i < a1.size(); i++)
@@ -24,7 +23,7 @@ int parse_port(std::string a1)
 
 void Server::printFtIrcBanner() {
     // \033[1;36m met le texte en Cyan brillant
-    std::cout << "\033[1;36m";
+    std::cout << "\033[1;98m";
     std::cout << "  __ _        _          " << std::endl;
     std::cout << " / _| |      (_)         " << std::endl;
     std::cout << "| |_| |_      _ _ __ ___ " << std::endl;
@@ -37,21 +36,20 @@ void Server::printFtIrcBanner() {
 }
 int main(int argc, char *argv[])
 {
-    signal(SIGINT, signal_handler);
-    // 1024kk
+    signal(SIGINT, Server::signal_handler);
    if (argc != 3) {
         std::cerr << "Usage: ./ircserv <port> <password>" << std::endl;
         return 1;
     }
     try
     {
-        int port = parse_port(argv[1]);
+        int port = Server::parse_port(argv[1]);
         if (strlen(argv[2]) == 0)
             throw std::logic_error("Enter a password");
         Server irc(port, argv[2]);
-        irc.printFtIrcBanner();
-        irc.init();
-        irc.build_and_listen();
+        Server::printFtIrcBanner();
+        irc.setupSocket();
+        irc.runEventLoop();
 
     }
     catch(const std::exception& e)

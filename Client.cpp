@@ -8,7 +8,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 Client::Client(int fd)
-    : _fd(fd), _nickname("*"), _passFilled(false),_nickFilled(false),
+    : _fd(fd), _nickname("*"), _passwordFilled(false),_nickFilled(false),
     _hasUser(false),_authorized(false),
     _currentChannel(NULL) {}
 
@@ -42,9 +42,9 @@ bool Client::gethasUser()const
 {
     return _hasUser;
 }
-bool Client::getpassFilled()const
+bool Client::getPasswordFilled()const
 {
-    return _passFilled;
+    return _passwordFilled;
 }
 const std::string& Client::getHost() const
 {
@@ -65,7 +65,7 @@ void Client::setHasUser(bool hasUser)
 }
 void Client::setPassFilled(bool passFilled)
 {
-    _passFilled = passFilled;
+    _passwordFilled = passFilled;
 }
 bool Client::getnickFilled() const
 {
