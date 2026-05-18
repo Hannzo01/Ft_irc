@@ -78,7 +78,11 @@ class Server
             const std::string& message);
         
         
-        static bool     keep_running;
+        void    clean();
+        void    disconnectClient(size_t &i, int current_fd);
+
+
+        static bool     keepRunning;
         static bool     is_command(std::string command);
         static bool     checkPassword(std::string& param);
         static bool     isValidNick(const std::string& nick);

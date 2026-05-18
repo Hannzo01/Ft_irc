@@ -2,9 +2,8 @@
 
 void Server::signal_handler(int signum) {
     (void)signum;
-    Server::keep_running = false;
+    Server::keepRunning = false;
 }
-
 
 int Server::parse_port(std::string a1)
 {
@@ -20,7 +19,6 @@ int Server::parse_port(std::string a1)
         return port;
 }
 
-
 void Server::printFtIrcBanner() {
     // \033[1;36m met le texte en Cyan brillant
     std::cout << "\033[1;98m";
@@ -34,6 +32,7 @@ void Server::printFtIrcBanner() {
     std::cout << " Server is starting...   " << std::endl;
     std::cout << "\033[0m"; // Remet la couleur par défaut
 }
+
 int main(int argc, char *argv[])
 {
     signal(SIGINT, Server::signal_handler);
@@ -50,11 +49,9 @@ int main(int argc, char *argv[])
         Server::printFtIrcBanner();
         irc.setupSocket();
         irc.runEventLoop();
-
     }
     catch(const std::exception& e)
     {
         std::cerr << e.what() << '\n';
     }
-    
 }
