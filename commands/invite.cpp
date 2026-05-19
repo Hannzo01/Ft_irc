@@ -9,6 +9,8 @@ void Server::handleInvite(Client* client, std::string param)
     std::string nick, channelName;
     iss >> nick >> channelName;
 
+    for (size_t i = 0; i < channelName.size(); i++)
+        channelName[i] = std::tolower(channelName[i]);
     // Check params 
     if (nick.empty() || channelName.empty()) {
         client->sendRaw(":localhost 461 " + client->getNick() + " INVITE :Not enough parameters\r\n");

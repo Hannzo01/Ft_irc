@@ -10,7 +10,8 @@ void Server::handleTopic(Client* client, std::string param)
     std::getline(iss, topic);
     if (!topic.empty() && topic[0] == ' ')
         topic = topic.substr(1);
-
+    for (size_t i = 0; i < channelName.size(); i++)
+        channelName[i] = std::tolower(channelName[i]);
     // --- rest is as before ---
     if (channelName.empty() || channelName[0] != '#') {
         client->sendRaw(":localhost 403 " + client->getNick() + " " + channelName + " :No such channel\r\n");

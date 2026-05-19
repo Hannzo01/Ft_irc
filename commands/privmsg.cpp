@@ -40,7 +40,8 @@ void Server::handlePrivmsg(Client* client, std::string param)
 
     if (target[0] == '#')
     {
-        channel_name = target;
+        
+        channel_name = target.substr(1);
         for (size_t i = 0; i < channel_name.size(); ++i)
             channel_name[i] = tolower(channel_name[i]);
         std::map<std::string, Channel*>::iterator it = _channels.find(channel_name);

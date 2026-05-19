@@ -47,6 +47,10 @@ void Server::handleJoin(Client* client, std::string param)
             client->sendRaw(":localhost 473 " + client->getNick() + " #" + chnameBare + " :Cannot join channel (+i)\r\n");
             continue;
         }
+        if (channel->isLimitEnabled() && channel->getMembers().size() == (size_t)channel->getLimit()){
+            client->sendRaw(":localhost 471 " + client->getNick() + " #" + chnameBare + " :Cannot join channel (+l)\r\n");
+            continue;
+        }
 
         channel->addMember(client);
         client->joinChannel(channel);

@@ -16,7 +16,8 @@ void Server::handleKick(Client* client, std::string param)
         while (iss >> more)
             reason += " " + more;
     }
-
+    for (size_t i = 0; i < channelName.size(); i++)
+        channelName[i] = std::tolower(channelName[i]);
     if (reason.empty())
         reason = client->getNick();
 

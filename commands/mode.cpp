@@ -32,7 +32,10 @@ void Server::handleMode(Client* client, std::string param)
     std::string word;
     while (iss >> word)
         args.push_back(word);
-
+    if (nickIsInUse(channelName) && modes == "+i")
+        return;
+    for (size_t i = 0; i < channelName.size(); i++)
+        channelName[i] = std::tolower(channelName[i]);
     // Not enough parameters
     if (channelName.empty()) {
         std::string reply = ":localhost 461 " + client->getNick() + " MODE :Not enough parameters\r\n";
