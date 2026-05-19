@@ -3,7 +3,7 @@
 bool Server::is_command(const std::string& command)
 {
     return (command == "PASS" || command == "NICK" || command == "USER"
-        || command == "CAP" || command == "PING" || command == "PONG" || command == "JOIN"
+        || command == "PING" || command == "PONG" || command == "JOIN"
         || command == "PRIVMSG" || command == "TOPIC" || command == "KICK" || command == "INVITE" 
         || command == "MODE"  || command == "QUIT");
 }
@@ -11,7 +11,7 @@ bool Server::is_command(const std::string& command)
 bool Server::authorizedRequired(const std::string& command)
 {
         return ( command == "JOIN" || command == "PRIVMSG" || command == "TOPIC" || command == "KICK" || command == "INVITE" 
-        || command == "MODE"  || command == "QUIT");
+        || command == "MODE");
 }
 
 void Server::handleCap(Client* client, std::string param)
@@ -26,6 +26,7 @@ void Server::processCommand(int fd, std::string& line)
     if (!client)
         return;
 
+
     std::string         command;
     std::istringstream  iss(line);
     iss >> command;
@@ -39,7 +40,11 @@ void Server::processCommand(int fd, std::string& line)
         param =  "";
     else
         param =  line.substr(spacePos + 1);
-
+    
+    if (command == "CAP"){
+        handleCap(client, param);
+        return;
+    }
 
     if (!client->getisAuthorized())
     {
@@ -55,9 +60,6 @@ void Server::processCommand(int fd, std::string& line)
         if (command == "QUIT"){
             handleQuit(client);
             return ;}
-        if (command == "CAP"){
-            handleCap(client, param);
-            return;}
         if (param == ""){
             sendReply(client, "461",  client->getNick(), command, "Not enough parameters");
             return ;}
@@ -82,7 +84,7 @@ void Server::processCommand(int fd, std::string& line)
         else if (command == "JOIN")     handleJoin(client, param);
         else if (command == "TOPIC")    handleTopic(client, param);
         else if (command == "INVITE")   handleInvite(client, param);
-        // else if (command == "MODE")  handleMode(fd, line);
+        else if (command == "MODE")     handleMode(client, param);
         else if (command == "KICK")     handleKick(client, param);
         else
             sendReply(client, "421", client->getNick(), command, "Unknown command");

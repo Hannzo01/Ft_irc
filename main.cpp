@@ -21,7 +21,7 @@ int Server::parse_port(std::string a1)
 
 void Server::printFtIrcBanner() 
 {
-    std::cout << "\033[31m" << std::endl;
+    std::cout << "\033[20m" << std::endl;
     std::cout << " Server is starting...   " << std::endl;
     std::cout << "  __ _        _          " << std::endl;
     std::cout << " / _| |      (_)         " << std::endl;
