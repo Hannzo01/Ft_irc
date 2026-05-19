@@ -1,98 +1,76 @@
 #include "../Server.hpp"
 
-static std::string trim(const std::string& str) {
-    size_t start = str.find_first_not_of(" \t\r\n");
-    size_t end = str.find_last_not_of(" \t\r\n");
-    return (start == std::string::npos) ? "" : str.substr(start, end - start + 1);
-}
+///*   KICK <channel> <nick> [:reason]  *///
 
-///*   KICK <channel> <user> [:comment]   *///
 void Server::handleKick(Client* client, std::string param)
 {
-    // Parse parameters 
     std::istringstream iss(param);
-    std::string channelName, targetNick, comment;
-    iss >> channelName >> targetNick;
-    std::getline(iss, comment);
+    std::string channelName, nick, reason;
+    iss >> channelName >> nick;
 
-    // Remove leading space/colon if present
-    comment = trim(comment);
-    if (!comment.empty() && comment[0] == ':')
-        comment = comment.substr(1);
+    std::string word;
+    if (iss >> word && !word.empty() && word[0] == ':')
+    {
+        reason = word.substr(1);
+        std::string more;
+        while (iss >> more)
+            reason += " " + more;
+    }
 
-    //  missing param
-    if (channelName.empty() || targetNick.empty()) {
-        std::string reply = ":" + std::string("localhost") + " 461 " +
-            client->getNick() + " KICK :Not enough parameters\r\n";
-        client->sendRaw(reply);
+    if (reason.empty())
+        reason = client->getNick();
+
+    // Parameter checks
+    if (channelName.empty() || nick.empty()) {
+        client->sendRaw(":localhost 461 " + client->getNick() + " KICK :Not enough parameters\r\n");
         return;
     }
-   if (channelName[0] != '#') {
-        // ERR_NOSUCHCHANNEL (403)
-        std::string reply = ":" + std::string("localhost") + " 403 " +
-            client->getNick() + " " + channelName + " :No such channel\r\n";
-        client->sendRaw(reply);
+    if (channelName[0] != '#') {
+        client->sendRaw(":localhost 403 " + client->getNick() + " " + channelName + " :No such channel\r\n");
         return;
     }
-    for (size_t i = 0; i < channelName.size(); i++)
-        channelName[i] = tolower(channelName[i]);
+    std::string origChanHash = channelName;
+    channelName = channelName.substr(1);
 
-    //  Channel exists
     Channel* channel = getChannel(channelName);
     if (!channel) {
-        // ERR_NOSUCHCHANNEL (403)
-        std::string reply = ":" + std::string("localhost") + " 403 " +
-            client->getNick() + " " + channelName + " :No such channel\r\n";
-        client->sendRaw(reply);
+        client->sendRaw(":localhost 403 " + client->getNick() + " " + origChanHash + " :No such channel\r\n");
         return;
     }
-
-    // User must be on channel
     if (!channel->hasMember(client)) {
-        // ERR_NOTONCHANNEL (442)
-        std::string reply = ":" + std::string("localhost") + " 442 " +
-            client->getNick() + " " + channelName + " :You're not on that channel\r\n";
-        client->sendRaw(reply);
+        client->sendRaw(":localhost 442 " + client->getNick() + " " + origChanHash + " :You're not on that channel\r\n");
         return;
     }
-
-    //Must be operator
     if (!channel->isOperator(client)) {
-        // ERR_CHANOPRIVSNEEDED (482)
-        std::string reply = ":" + std::string("localhost") + " 482 " +
-            client->getNick() + " " + channelName + " :You're not channel operator\r\n";
-        client->sendRaw(reply);
+        client->sendRaw(":localhost 482 " + client->getNick() + " " + origChanHash + " :You're not channel operator\r\n");
         return;
     }
 
-    // Is target present
     Client* target = NULL;
-    // find target by nick:
-    const std::vector<Client*>& members = channel->getMembers();
-    for (size_t i = 0; i < members.size(); ++i)
-        if (members[i]->getNick() == targetNick)
-            target = members[i];
-    if (!target) {
-        // ERR_USERNOTINCHANNEL (441)
-        std::string reply = ":" + std::string("localhost") + " 441 " +
-            client->getNick() + " " + targetNick + " " + channelName + " :They aren't on that channel\r\n";
-        client->sendRaw(reply);
+    for (size_t i = 0; i < _clients.size(); ++i)
+        if (_clients[i]->getNick() == nick)
+            target = _clients[i];
+    if (!target || !channel->hasMember(target)) {
+        client->sendRaw(":localhost 441 " + client->getNick() + " " + nick + " " + origChanHash + " :They aren't on that channel\r\n");
         return;
     }
 
-    // === 7. Do the KICK ===
-    std::string kickMsg = ":" + client->getNick() + "!" + client->getUser() + "@localhost "
-        + "KICK " + channelName + " " + targetNick
-        + " :" + (comment.empty() ? client->getNick() : comment) + "\r\n";
-    // Notify all channel members
-    for (size_t i = 0; i < members.size(); ++i)
-        members[i]->sendRaw(kickMsg);
-
-    // Remove target from channel
+    // Broadcast to all members (must include the kicker and target)
+    channel->broadcast(":" + client->getPrefix()
+        + " KICK " + origChanHash + " " + target->getNick()
+        + " :" + reason + "\r\n");
+    
+    // Remove target from the channel
     channel->removeMember(target);
     target->leaveChannel(channel);
 
-    // // Optionally, remove channel if empty
-    // if (channel->getMembers().empty())
-    //     removeChannel(channelName);
+    // (Optional) Remove op status, invite, etc.
+    channel->removeOperator(target); // Safe if they aren't an op
+    channel->removeInvite(target);   // Safe if they aren't invited
+
+
+    // If the channel is empty, remove it
+    if (channel->getMembers().empty())
+        removeChannel(channelName);
+
 }

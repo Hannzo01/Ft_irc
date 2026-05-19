@@ -1,4 +1,5 @@
 #include "../Server.hpp"
+
 ///* INVITE <nickname> <#channel>*///
 
 void Server::handleInvite(Client* client, std::string param)
@@ -10,36 +11,33 @@ void Server::handleInvite(Client* client, std::string param)
 
     // Check params 
     if (nick.empty() || channelName.empty()) {
-        std::string reply = ":localhost 461 " + client->getNick() + " INVITE :Not enough parameters\r\n";
-        client->sendRaw(reply);
+        client->sendRaw(":localhost 461 " + client->getNick() + " INVITE :Not enough parameters\r\n");
         return;
     }
 
     if (channelName[0] != '#') {
-        std::string reply = ":localhost 403 " + client->getNick() + " " + channelName + " :No such channel\r\n";
-        client->sendRaw(reply);
+        client->sendRaw(":localhost 403 " + client->getNick() + " " + channelName + " :No such channel\r\n");
         return;
     }
+    std::string origChanHash = channelName; // save "#chan" for reply
     channelName = channelName.substr(1);
+
     // Channel exists? 
     Channel* channel = getChannel(channelName);
     if (!channel) {
-        std::string reply = ":localhost 403 " + client->getNick() + " " + channelName + " :No such channel\r\n";
-        client->sendRaw(reply);
+        client->sendRaw(":localhost 403 " + client->getNick() + " " + origChanHash + " :No such channel\r\n");
         return;
     }
 
     // User is on channel? 
     if (!channel->hasMember(client)) {
-        std::string reply = ":localhost 442 " + client->getNick() + " " + channelName + " :You're not on that channel\r\n";
-        client->sendRaw(reply);
+        client->sendRaw(":localhost 442 " + client->getNick() + " " + origChanHash + " :You're not on that channel\r\n");
         return;
     }
 
-    // Is client operator? (for +i or always for 42) 
+    // Is client operator? (required for 42/IRC, always for ft_irc)
     if (!channel->isOperator(client)) {
-        std::string reply = ":localhost 482 " + client->getNick() + " " + channelName + " :You're not channel operator\r\n";
-        client->sendRaw(reply);
+        client->sendRaw(":localhost 482 " + client->getNick() + " " + origChanHash + " :You're not channel operator\r\n");
         return;
     }
 
@@ -49,28 +47,33 @@ void Server::handleInvite(Client* client, std::string param)
         if (_clients[i]->getNick() == nick)
             target = _clients[i];
     if (!target) {
-        std::string reply = ":localhost 401 " + client->getNick() + " " + nick + " :No such nick\r\n";
-        client->sendRaw(reply);
+        client->sendRaw(":localhost 401 " + client->getNick() + " " + nick + " :No such nick\r\n");
         return;
     }
 
     // Already in channel? 
     if (channel->hasMember(target)) {
-        std::string reply = ":localhost 443 " + client->getNick() + " " + nick + " " + channelName + " :is already on channel\r\n";
-        client->sendRaw(reply);
+        client->sendRaw(":localhost 443 " + client->getNick() + " " + nick + " " + origChanHash + " :is already on channel\r\n");
         return;
     }
 
-    // Add to invite list (implement logic in Channel) 
-    // channel->addInvite(target);
+    // Already invited? (NOT in RFC, but good to block double invites)
+    if (channel->isInvited(target)) {
+        // Optionally: just reply 341 as usual (don't fail)
+        client->sendRaw(":localhost 341 " + client->getNick() + " " + nick + " " + origChanHash + "\r\n");
+        return;
+    }
+
+    // Add to invite list
+    channel->addInvite(target);
 
     // Send confirmation numeric to inviter 
-    std::string reply = ":localhost 341 " + client->getNick() + " " + nick + " " + channelName + "\r\n";
-    client->sendRaw(reply);
+    client->sendRaw(":localhost 341 " + client->getNick() + " " + nick + " " + origChanHash + "\r\n");
 
-    // Optionally, notify the invitee 
-    std::string notif = ":" + client->getNick() + "!" + client->getUser() + "@localhost INVITE " + nick + " :" + channelName + "\r\n";
+    // Notify the invitee (RFC-style prefix!)
+    std::string notif = ":" + client->getPrefix()
+        + " INVITE " + target->getNick()
+        + " :" + origChanHash + "\r\n";
     target->sendRaw(notif);
 
-    // Now, when the invited client sends JOIN, you should allow it (even if +i) if they're on the invite list.
 }

@@ -44,7 +44,7 @@ public:
     const std::vector<Channel*>& getChannels() const;
 
     void sendRaw(const std::string& msg);
-    
+    std::string getPrefix() const;
 private:
     int _fd;                         // Socket file descriptor
     std::string _nickname;

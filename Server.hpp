@@ -82,6 +82,7 @@ class Server
         
         void    clean();
         void    disconnectClient(size_t &i, int current_fd);
+        void removeChannel(const std::string& channelName);
 
 
         static bool     keepRunning;

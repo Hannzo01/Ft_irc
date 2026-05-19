@@ -36,6 +36,14 @@ void Channel::addOperator(Client* client) {
     if (std::find(_operators.begin(), _operators.end(), client) == _operators.end())
         _operators.push_back(client);
 }
+
+void Channel::removeOperator(Client* client) {
+    std::vector<Client*>::iterator it =
+        std::find(_operators.begin(), _operators.end(), client);
+    if (it != _operators.end())
+        _operators.erase(it);
+}
+
 bool Channel::isOperator(Client* client) const {
     return std::find(_operators.begin(), _operators.end(), client) != _operators.end();
 }
@@ -51,7 +59,40 @@ void Channel::broadcast_msg(Client* client, std::string message)
     }
 }
 
+std::string Channel::composeModeString() const {
+    std::string modes = "+";
+    std::string params;
 
+    // +i (invite-only)
+    if (_inviteOnly)
+        modes += "i";
+    // +t (topic only by op)
+    if (_topicOpOnly)
+        modes += "t";
+    // +k (password/key set)
+    if (_keyEnabled)
+        modes += "k";
+    // +l (user limit set)
+    if (_limitEnabled)
+        modes += "l";
+
+    // Order of params follows order of mode chars that need arguments (+k +l)
+    if (_keyEnabled)
+        params += " " + _key;
+    if (_limitEnabled) {
+        std::ostringstream oss;
+        oss << _userLimit;
+        params += " " + oss.str();
+    }
+
+    return modes + params;
+}
+
+void Channel::broadcast(const std::string& message) {
+    for (size_t i = 0; i < _members.size(); ++i) {
+        _members[i]->sendRaw(message);
+    }
+}
 
 // +i invite-only mode
 void Channel::setInviteOnly(bool enabled) {
@@ -102,15 +143,23 @@ int Channel::getLimit() const {
 }
 
 // Invite list logic for +i channels
-void Channel::addInvite(Client* client) {
-    if (std::find(_inviteList.begin(), _inviteList.end(), client) == _inviteList.end())
-        _inviteList.push_back(client);
+void Channel::addInvite(Client* c) {
+    if (!isInvited(c))
+        _invited.push_back(c);
 }
-bool Channel::isInvited(Client* client) const {
-    return std::find(_inviteList.begin(), _inviteList.end(), client) != _inviteList.end();
+
+bool Channel::isInvited(Client* c) const {
+    for (size_t i = 0; i < _invited.size(); ++i)
+        if (_invited[i] == c)
+            return true;
+    return false;
 }
-void Channel::clearInvite(Client* client) {
-    std::vector<Client*>::iterator it = std::find(_inviteList.begin(), _inviteList.end(), client);
-    if (it != _inviteList.end())
-        _inviteList.erase(it);
+
+// Remove after successful JOIN
+void Channel::removeInvite(Client* c) {
+    for (std::vector<Client*>::iterator it = _invited.begin(); it != _invited.end(); ++it)
+        if (*it == c) {
+            _invited.erase(it);
+            break;
+        }
 }

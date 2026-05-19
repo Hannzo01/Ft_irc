@@ -56,6 +56,7 @@ public:
 
     // Modes, operators, invitees etc. can be added as needed
     void addOperator(Client* client);
+    void removeOperator(Client* client);
     bool isOperator(Client* client) const;
 
 
@@ -80,15 +81,20 @@ public:
     bool isLimitEnabled() const;
     int getLimit() const;
 
-    void addInvite(Client* client);
-    bool isInvited(Client* client) const;
-    void clearInvite(Client* client);
+
+    std::string composeModeString() const;
+    void broadcast(const std::string& message);
+
+    void addInvite(Client* c);
+    bool isInvited(Client* c) const;
+    void removeInvite(Client* c);
 
 private:
     std::string _name;
     std::string _topic;
     std::vector<Client*> _members;
     std::vector<Client*> _operators;
+    std::vector<Client*> _invited;
 
     bool _inviteOnly;      // +i invite-only mode
     bool _topicOpOnly;     // +t topic settable by ops only

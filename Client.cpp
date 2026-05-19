@@ -84,3 +84,6 @@ void Client::sendRaw(const std::string& msg) {
         std::cerr << "sendRaw failed" << std::endl;
     }
 }
+std::string Client::getPrefix() const {
+    return _nickname + "!" + _username + "@" + _host;
+}

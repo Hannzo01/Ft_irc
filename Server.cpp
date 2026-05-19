@@ -186,3 +186,13 @@ Channel* Server::getChannel(std::string name) const {
 void Server::addChannel(std::string chname, Channel* newChannel) {
     _channels[chname] = newChannel;
 }
+void removeChannel(const std::string& channelName);
+
+// Server.cpp
+void Server::removeChannel(const std::string& channelName) {
+    std::map<std::string, Channel*>::iterator it = _channels.find(channelName);
+    if (it != _channels.end()) {
+        delete it->second;          // Free memory if dynamically allocated
+        _channels.erase(it);        // Remove from map
+    }
+}
