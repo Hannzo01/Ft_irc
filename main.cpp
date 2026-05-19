@@ -19,9 +19,10 @@ int Server::parse_port(std::string a1)
         return port;
 }
 
-void Server::printFtIrcBanner() {
-    // \033[1;36m met le texte en Cyan brillant
-    std::cout << "\033[1;98m";
+void Server::printFtIrcBanner() 
+{
+    std::cout << "\033[31m" << std::endl;
+    std::cout << " Server is starting...   " << std::endl;
     std::cout << "  __ _        _          " << std::endl;
     std::cout << " / _| |      (_)         " << std::endl;
     std::cout << "| |_| |_      _ _ __ ___ " << std::endl;
@@ -29,14 +30,12 @@ void Server::printFtIrcBanner() {
     std::cout << "| | | ||_____| | | | (__ " << std::endl;
     std::cout << "|_|  \\__|    |_|_|  \\___|" << std::endl;
     std::cout << "                         " << std::endl;
-    std::cout << " Server is starting...   " << std::endl;
-    std::cout << "\033[0m"; // Remet la couleur par défaut
 }
 
 int main(int argc, char *argv[])
 {
     signal(SIGINT, Server::signal_handler);
-   if (argc != 3) {
+    if (argc != 3) {
         std::cerr << "Usage: ./ircserv <port> <password>" << std::endl;
         return 1;
     }

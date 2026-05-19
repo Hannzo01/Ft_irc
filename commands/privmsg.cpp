@@ -1,5 +1,16 @@
 #include "../Server.hpp"
 
+bool    Server::are_equal(const std::string& a, const std::string& b){
+    if (a.size() != b.size())
+        return false;
+    for (size_t i = 0; i < a.size(); i++)
+    {
+        if (tolower(a[i]) != tolower(b[i]))
+            return false;
+    }
+    return true;
+}
+
 void Server::handlePrivmsg(Client* client, std::string param)
 {
     std::string     target;
@@ -51,14 +62,14 @@ void Server::handlePrivmsg(Client* client, std::string param)
     }
     else
     {
-        for(size_t i = 0; i < clients.size(); i++)
+        for(size_t i = 0; i < _clients.size(); i++)
         {
-            if (are_equal(target, clients[i]->getNick()) == true)
+            if (are_equal(target, _clients[i]->getNick()) == true)
             {
                 nick_found = true;
                 // :<expediteur>!<username>@<host> PRIVMSG <cible> :<le message complet>\r\n
                 message = ":" + client->getNick() + "!" + client->getUser() + "@" + client->getHost() + " PRIVMSG " + target + " :" + argument + "\r\n";
-                send(clients[i]->getFd(), message.c_str(), message.size(), 0);
+                send(_clients[i]->getFd(), message.c_str(), message.size(), 0);
                 break ;
             }
         }

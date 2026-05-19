@@ -1,6 +1,5 @@
 #include "../Server.hpp"
 
-
 static std::vector<std::string> split(const std::string& str, char delim) {
     std::vector<std::string> res; std::string buf;
     std::istringstream ss(str);

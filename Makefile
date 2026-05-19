@@ -5,7 +5,7 @@ SRC = main.cpp Server.cpp Channel.cpp Client.cpp \
 	commands/privmsg.cpp commands/nick.cpp commands/pass.cpp \
 	commands/user.cpp commands/ping.cpp commands/quit.cpp \
 	commands/topic.cpp commands/join.cpp commands/kick.cpp \
-	commands/invite.cpp commands/mode.cpp
+	commands/invite.cpp commands/mode.cpp commands/proccmd.cpp \
 
 OBJ = $(SRC:.cpp=.o)
 

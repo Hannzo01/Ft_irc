@@ -80,9 +80,9 @@ void Server::handleMode(Client* client, std::string param)
             }
             std::string targetNick = args[a++];
             Client* target = NULL;
-            for (size_t j = 0; j < clients.size(); ++j)
-                if (clients[j]->getNick() == targetNick)
-                    target = clients[j];
+            for (size_t j = 0; j < _clients.size(); ++j)
+                if (_clients[j]->getNick() == targetNick)
+                    target = _clients[j];
             if (!target || !channel->hasMember(target)) {
                 // ERR_USERNOTINCHANNEL (441)
                 std::string reply = ":localhost 441 " + client->getNick() + " " + targetNick + " " + channelName + " :They aren't on that channel\r\n";

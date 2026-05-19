@@ -1,4 +1,5 @@
-#pragma once 
+#ifndef SERVER_HPP
+#define  SERVER_HPP
 
 #include <sys/socket.h>
 #include <iostream>
@@ -27,7 +28,7 @@ class Server
 {
     private:
 
-        std::vector<Client *>           clients;
+        std::vector<Client *>           _clients;
         std::vector<struct pollfd>      _pollFds;
         std::map<int, std::string>      _clientBuffers;
         std::map<std::string, Channel*> _channels;
@@ -52,8 +53,9 @@ class Server
         void    handleJoin(Client* client, std::string param);
         void    handleTopic(Client* client, std::string param);
         void    handleKick(Client* client, std::string param);
-        void handleInvite(Client* client, std::string param);
-        void handleMode(Client* client, std::string param);
+        void    handleInvite(Client* client, std::string param);
+        void    handleMode(Client* client, std::string param);
+        void    handleCap(Client* client, std::string param);
 
     public:
 
@@ -64,7 +66,7 @@ class Server
         void    runEventLoop();
         void    acceptNewConnection();
         void    readDataFromClient(size_t &i, int current_fd);
-        void    handle_command(int fd, std::string& line);
+        void    processCommand(int fd, std::string& line);
 
 
         bool        nickIsInUse(std::string nickname)const;
@@ -83,7 +85,8 @@ class Server
 
 
         static bool     keepRunning;
-        static bool     is_command(std::string command);
+        static bool     authorizedRequired(const std::string& command);
+        static bool     is_command(const std::string& command);
         static bool     checkPassword(std::string& param);
         static bool     isValidNick(const std::string& nick);
         static void     printFtIrcBanner();
@@ -93,5 +96,6 @@ class Server
         ///*channels handler*///
         Channel*    getChannel(std::string name) const;
         void        addChannel(std::string chname, Channel* newChannel);
-
 };
+
+#endif

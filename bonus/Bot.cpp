@@ -81,7 +81,7 @@ void Bot::setupSocket()
         {
 
             std::string line = buffer.substr(0, pos + 2);
-            std::cout << "[DEBUG] : " << line;
+            std::cout << "[DEBUG] : " << line; // delete 
 
 
             if (line.find("PING") != std::string::npos)

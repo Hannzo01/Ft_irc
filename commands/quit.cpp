@@ -14,12 +14,12 @@ void Server::handleQuit(Client* client)
     //         break;
     //     }
     // }
-    for (size_t j = 0; j < clients.size(); j++)
+    for (size_t j = 0; j < _clients.size(); j++)
     {
-        if (clients[j] == client)
+        if (_clients[j] == client)
         {
-            delete clients[j];
-            clients.erase(clients.begin() + j);
+            delete _clients[j];
+            _clients.erase(_clients.begin() + j);
             break;
         }
     }

@@ -1,6 +1,4 @@
 #include "../Server.hpp"
-
-
 ///* INVITE <nickname> <#channel>*///
 
 void Server::handleInvite(Client* client, std::string param)
@@ -47,9 +45,9 @@ void Server::handleInvite(Client* client, std::string param)
 
     // Find invitee 
     Client* target = NULL;
-    for (size_t i = 0; i < clients.size(); ++i)
-        if (clients[i]->getNick() == nick)
-            target = clients[i];
+    for (size_t i = 0; i < _clients.size(); ++i)
+        if (_clients[i]->getNick() == nick)
+            target = _clients[i];
     if (!target) {
         std::string reply = ":localhost 401 " + client->getNick() + " " + nick + " :No such nick\r\n";
         client->sendRaw(reply);

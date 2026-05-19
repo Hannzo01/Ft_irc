@@ -23,12 +23,15 @@ class Bot
         std::string _ip;
         int _port;
         std::string _password;
+
     public:
-    Bot(std::string ip, int port, std::string pass);
-    ~Bot();
-    void setupSocket();
-    static std::string get_a_random_joke();
-    static void printSnowbotBanner();
+        Bot(std::string ip, int port, std::string pass);
+        ~Bot();
+        void    setupSocket();
+
+        static  void        parse_input(std::string ip, std::string port, std::string password);
+        static  void        printSnowbotBanner();
+        static  std::string get_a_random_joke();
 };
 
 #endif
