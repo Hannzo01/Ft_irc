@@ -137,7 +137,11 @@ void Server::readDataFromClient(size_t &i, int clientFd)
         while (lineEnd != std::string::npos)
         {
             line = _clientBuffers[clientFd].substr(0, lineEnd);
-
+            if (_clientBuffers[clientFd].find("\r\n") == std::string::npos && _clientBuffers[clientFd].size() > 512)
+            { // hadi ra zdtha ela 7sab rfc
+                disconnectClient(i, clientFd);
+                return;
+            }
 
             std::cout << "[PARSER] Commande extraite : [" << line << "]" << std::endl; // delete later
 
