@@ -52,8 +52,8 @@ class Server
         void    handleJoin(Client* client, std::string param);
         void    handleTopic(Client* client, std::string param);
         void    handleKick(Client* client, std::string param);
-        // void handleInvite(Client* client, std::string param);
-        // void handleMode(Client* client, std::string param);
+        void handleInvite(Client* client, std::string param);
+        void handleMode(Client* client, std::string param);
 
     public:
 
