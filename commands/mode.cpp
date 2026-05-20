@@ -75,6 +75,9 @@ void Server::handleMode(Client* client, std::string param)
         return;
     }
 
+   std::string mode_reply; // will collect changes
+    std::vector<std::string> mode_args; // will collect args
+
     bool adding = true;
     size_t argi = 0;
     for (size_t i = 0; i < modes.size(); ++i) {
@@ -83,9 +86,13 @@ void Server::handleMode(Client* client, std::string param)
         if (c == '-') { adding = false; continue; }
         if (c == 'i') {
             channel->setInviteOnly(adding);
+            mode_reply += (adding ? "+" : "-");
+            mode_reply += "i";
         }
         else if (c == 't') {
             channel->setTopicOpOnly(adding);
+            mode_reply += (adding ? "+" : "-");
+            mode_reply += "t";
         }
         else if (c == 'o') {
             if (argi >= args.size()) {
@@ -107,6 +114,9 @@ void Server::handleMode(Client* client, std::string param)
                 channel->addOperator(target);
             else
                 channel->removeOperator(target);
+            mode_reply += (adding ? "+" : "-");
+            mode_reply += "o";
+            mode_args.push_back(targetNick);
         }
         else if (c == 'k') {
             if (adding) {
@@ -116,8 +126,11 @@ void Server::handleMode(Client* client, std::string param)
                     break;
                 }
                 channel->setKey(args[argi++]);
+                mode_reply += "+k";
+                mode_args.push_back(args[argi - 1]);
             } else {
                 channel->removeKey();
+                mode_reply += "-k";
             }
         }
         else if (c == 'l') {
@@ -129,8 +142,11 @@ void Server::handleMode(Client* client, std::string param)
                 }
                 int lim = atoi(args[argi++].c_str());
                 channel->setLimit(lim);
+                mode_reply += "+l";
+                mode_args.push_back(args[argi - 1]);
             } else {
                 channel->removeLimit();
+                mode_reply += "-l";
             }
         }
         else {
@@ -138,5 +154,12 @@ void Server::handleMode(Client* client, std::string param)
             std::string reply = ":localhost 472 " + client->getNick() + " " + std::string(1, c) + " :is unknown mode char\r\n";
             client->sendRaw(reply);
         }
+    }
+    if (!mode_reply.empty()) {
+        std::string reply = ":" + client->getPrefix() + " MODE #" + channelName + " " + mode_reply;
+        for (size_t i = 0; i < mode_args.size(); ++i)
+            reply += " " + mode_args[i];
+        reply += "\r\n";
+        channel->broadcast(reply);
     }
 }
