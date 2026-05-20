@@ -1,5 +1,7 @@
 #include "../Server.hpp"
 
+///* user <username> 0 * <realname> *///
+
 bool Server::checkPassword(std::string& param)
 {
     size_t first = param.find_first_not_of(" \t\r\n");

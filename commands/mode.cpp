@@ -36,23 +36,19 @@ void Server::handleMode(Client* client, std::string param)
         return;
     for (size_t i = 0; i < channelName.size(); i++)
         channelName[i] = std::tolower(channelName[i]);
-    // Not enough parameters
     if (channelName.empty()) {
         std::string reply = ":localhost 461 " + client->getNick() + " MODE :Not enough parameters\r\n";
         client->sendRaw(reply);
         return;
     }
 
-    // Is it a channel?
     if (channelName[0] != '#') {
         std::string reply = ":localhost 403 " + client->getNick() + " " + channelName + " :No such channel\r\n";
         client->sendRaw(reply);
         return;
     }
-    // Remove #
     channelName = channelName.substr(1);
 
-    // Channel exists?
     Channel* channel = getChannel(channelName);
     if (!channel) {
         std::string reply = ":localhost 403 " + client->getNick() + " #" + channelName + " :No such channel\r\n";
@@ -60,7 +56,6 @@ void Server::handleMode(Client* client, std::string param)
         return;
     }
 
-    // GET MODES if only channel is given
     if (modes.empty()) {
         std::string modeStr = channel->composeModeString(); // implement this to return e.g. "+itkl 10 mykey"
         std::string reply = ":localhost 324 " + client->getNick() + " #" + channelName + " " + modeStr + "\r\n";
@@ -68,15 +63,14 @@ void Server::handleMode(Client* client, std::string param)
         return;
     }
 
-    // Only ops can change channels
     if (!channel->isOperator(client)) {
         std::string reply = ":localhost 482 " + client->getNick() + " #" + channelName + " :You're not channel operator\r\n";
         client->sendRaw(reply);
         return;
     }
 
-   std::string mode_reply; // will collect changes
-    std::vector<std::string> mode_args; // will collect args
+   std::string mode_reply;
+    std::vector<std::string> mode_args;
 
     bool adding = true;
     size_t argi = 0;
@@ -150,7 +144,6 @@ void Server::handleMode(Client* client, std::string param)
             }
         }
         else {
-            // Unknown mode char
             std::string reply = ":localhost 472 " + client->getNick() + " " + std::string(1, c) + " :is unknown mode char\r\n";
             client->sendRaw(reply);
         }

@@ -4,16 +4,13 @@ void Server::handleUser(Client* client, std::string param)
 {
     if (!client->getPasswordFilled())
     {
-        // ERR_NOTREGISTERED (451)
         sendReply(client, "451", "*", "", "You have not registered");
         return;
     }
     if (client->gethasUser()) {
-        // ERR_ALREADYREGISTERED (462)
         sendReply(client, "462",  client->getNick(), "", "You may not reregister");
         return;
     } else if (param.empty()) {
-        // ERR_NEEDMOREPARAMS (461)
         sendReply(client, "461",  client->getNick(), "USER", " Not enough parameters");
         return;
 

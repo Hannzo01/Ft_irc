@@ -12,7 +12,6 @@ void Server::handleTopic(Client* client, std::string param)
         topic = topic.substr(1);
     for (size_t i = 0; i < channelName.size(); i++)
         channelName[i] = std::tolower(channelName[i]);
-    // --- rest is as before ---
     if (channelName.empty() || channelName[0] != '#') {
         client->sendRaw(":localhost 403 " + client->getNick() + " " + channelName + " :No such channel\r\n");
         return;
@@ -27,7 +26,6 @@ void Server::handleTopic(Client* client, std::string param)
         return;
     }
 
-    // Set topic if topic string exists (setting topic)
     if (!topic.empty()) {
         if (channel->isTopicOpOnly() && !channel->isOperator(client)) {
             client->sendRaw(":localhost 482 " + client->getNick() + " " + channelName + " :You're not channel operator\r\n");

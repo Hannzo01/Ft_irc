@@ -21,7 +21,6 @@ void Server::handleKick(Client* client, std::string param)
     if (reason.empty())
         reason = client->getNick();
 
-    // Parameter checks
     if (channelName.empty() || nick.empty()) {
         client->sendRaw(":localhost 461 " + client->getNick() + " KICK :Not enough parameters\r\n");
         return;
@@ -56,21 +55,17 @@ void Server::handleKick(Client* client, std::string param)
         return;
     }
 
-    // Broadcast to all members (must include the kicker and target)
     channel->broadcast(":" + client->getPrefix()
         + " KICK " + origChanHash + " " + target->getNick()
         + " :" + reason + "\r\n");
     
-    // Remove target from the channel
     channel->removeMember(target);
     target->leaveChannel(channel);
 
-    // (Optional) Remove op status, invite, etc.
-    channel->removeOperator(target); // Safe if they aren't an op
-    channel->removeInvite(target);   // Safe if they aren't invited
+    channel->removeOperator(target); 
+    channel->removeInvite(target);  
 
 
-    // If the channel is empty, remove it
     if (channel->getMembers().empty())
         removeChannel(channelName);
 
