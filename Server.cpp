@@ -5,7 +5,9 @@ bool Server::keepRunning = true;
 
 Server::Server(int port, std::string password) : _port(port), _password(password){}
 
-Server::~Server() {}
+Server::~Server() {
+    clean();
+}
 
 void    Server::setupSocket()
 {
@@ -52,6 +54,7 @@ void Server::acceptNewConnection()
                             
         clientPollFd.fd = clientFd;
         clientPollFd.events = POLLIN;
+        clientPollFd.revents = 0;
         _pollFds.push_back(clientPollFd);
         _clientBuffers[clientFd] = "";
     }
@@ -83,6 +86,7 @@ void Server::runEventLoop()
 {
     _serverPollFd.fd = _serverSocket;
     _serverPollFd.events = POLLIN;
+    _serverPollFd.revents = 0;
     _pollFds.push_back(_serverPollFd);
     
     if (listen(_serverSocket, 0) < 0)
@@ -103,7 +107,6 @@ void Server::runEventLoop()
             }
         }
     }
-    clean();
 }
 
 void Server::disconnectClient(size_t &i, int clientFd)
