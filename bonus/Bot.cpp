@@ -53,14 +53,18 @@ void Bot::setupSocket()
 
 
     std::string PASS_cmd = "PASS " + _password + "\r\n";
-    send(ClientSocket, PASS_cmd.c_str(), PASS_cmd.length(), 0);
+    if (send(ClientSocket, PASS_cmd.c_str(), PASS_cmd.length(), 0) < 0)
+        throw std::runtime_error("send failed");
 
     std::string NICK_cmd = "NICK Snowbot\r\n";
-    send(ClientSocket, NICK_cmd.c_str(), NICK_cmd.length(), 0);
+    if (send(ClientSocket, NICK_cmd.c_str(), NICK_cmd.length(), 0) < 0)
+        throw std::runtime_error("send failed");
 
     // USER <username> <hostname> <servername> :<realname>
     std::string USER_cmd = "USER Snowbot 0 * : Hey I am snowbot !\r\n";
-    send(ClientSocket, USER_cmd.c_str(), USER_cmd.length(), 0);
+    if (send(ClientSocket, USER_cmd.c_str(), USER_cmd.length(), 0) < 0)
+        throw std::runtime_error("send failed");
+
 
     std::string buffer;
     std::string message;
@@ -87,7 +91,9 @@ void Bot::setupSocket()
             if (line.find("PING") != std::string::npos)
             {
                 std::string pong_msg = "PONG :localhost\r\n"; 
-                send(ClientSocket, pong_msg.c_str(), pong_msg.size(), 0);
+                if (send(ClientSocket, pong_msg.c_str(), pong_msg.size(), 0) < 0)
+                    throw std::runtime_error("send failed");
+
             }
             size_t text_start = line.find(" :");
             if (text_start != std::string::npos)
@@ -105,7 +111,9 @@ void Bot::setupSocket()
                         std::string target = line.substr(colon + 1, exclamation_mark - colon - 1);
                         std::string joke = get_a_random_joke();
                         message = "PRIVMSG " + target + " :" + joke + "\r\n";
-                        send(ClientSocket, message.c_str(), message.size(), 0);
+                        if (send(ClientSocket, message.c_str(), message.size(), 0) < 0)
+                            throw std::runtime_error("send failed");
+
                     }
                 }
             }
