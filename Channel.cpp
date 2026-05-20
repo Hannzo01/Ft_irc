@@ -54,7 +54,8 @@ void Channel::broadcast_msg(Client* client, std::string message)
     for (size_t i = 0; i < _members.size(); i++)
     {
         if (_members[i]->getFd() != client->getFd()){
-            send(_members[i]->getFd(), message.c_str(), message.size(), 0);
+            if (send(_members[i]->getFd(), message.c_str(), message.size(), 0) < 0)
+                throw std::runtime_error("send failed");
         }
     }
 }

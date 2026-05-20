@@ -20,10 +20,12 @@ void    Server::setupSocket()
     if (_serverSocket < 0)
         throw std::runtime_error("Socket failed");
 
-    fcntl(_serverSocket, F_SETFL, O_NONBLOCK);
-
+    if (fcntl(_serverSocket, F_SETFL, O_NONBLOCK) < 0)
+        throw std::runtime_error("fcntl failed");
     int reuseAddr = 1;
-    setsockopt(_serverSocket, SOL_SOCKET, SO_REUSEADDR, &reuseAddr, sizeof(reuseAddr));
+
+    if (setsockopt(_serverSocket, SOL_SOCKET, SO_REUSEADDR, &reuseAddr, sizeof(reuseAddr)) < 0)
+        throw std::runtime_error("setsockopt failed");
     if (bind(_serverSocket, (sockaddr *)&serverAddr, sizeof(serverAddr)) < 0)
         throw std::runtime_error("Bind failed");       
 }

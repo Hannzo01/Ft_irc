@@ -70,7 +70,9 @@ void Server::handlePrivmsg(Client* client, std::string param)
                 nick_found = true;
                 // :<expediteur>!<username>@<host> PRIVMSG <cible> :<le message complet>\r\n
                 message = ":" + client->getNick() + "!" + client->getUser() + "@" + client->getHost() + " PRIVMSG " + target + " :" + argument + "\r\n";
-                send(_clients[i]->getFd(), message.c_str(), message.size(), 0);
+                if (send(_clients[i]->getFd(), message.c_str(), message.size(), 0) < 0)
+                    throw std::runtime_error("send failed");
+
                 break ;
             }
         }
