@@ -48,7 +48,7 @@ class Server
         void    handleUser(Client* client, std::string param);
         void    handlePing(Client* client, std::string param);
         void    handlePrivmsg(Client* client, std::string param);
-        void    handleQuit(Client* client);
+        void    handleQuit(Client* client, size_t &i);
         // void handlePong(Client* client, std::string param);
         void    handleJoin(Client* client, std::string param);
         void    handleTopic(Client* client, std::string param);
@@ -66,7 +66,7 @@ class Server
         void    runEventLoop();
         void    acceptNewConnection();
         void    readDataFromClient(size_t &i, int current_fd);
-        void    processCommand(int fd, std::string& line);
+        void    processCommand(int fd, size_t &i, std::string& line);
 
 
         bool        nickIsInUse(std::string nickname)const;
@@ -82,7 +82,7 @@ class Server
         
         void    clean();
         void    disconnectClient(size_t &i, int current_fd);
-        void removeChannel(const std::string& channelName);
+        void    removeChannel(const std::string& channelName);
 
 
         static bool     keepRunning;

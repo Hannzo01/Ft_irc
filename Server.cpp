@@ -146,7 +146,7 @@ void Server::readDataFromClient(size_t &i, int clientFd)
             std::cout << "[PARSER] Commande extraite : [" << line << "]" << std::endl; // delete later
 
             
-            processCommand(clientFd, line);
+            processCommand(clientFd, i, line);
 
             _clientBuffers[clientFd].erase(0,lineEnd + 2);
             lineEnd = _clientBuffers[clientFd].find("\r\n");
@@ -190,9 +190,7 @@ Channel* Server::getChannel(std::string name) const {
 void Server::addChannel(std::string chname, Channel* newChannel) {
     _channels[chname] = newChannel;
 }
-void removeChannel(const std::string& channelName);
 
-// Server.cpp
 void Server::removeChannel(const std::string& channelName) {
     std::map<std::string, Channel*>::iterator it = _channels.find(channelName);
     if (it != _channels.end()) {

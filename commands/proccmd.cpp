@@ -20,7 +20,7 @@ void Server::handleCap(Client* client, std::string param)
         client->sendRaw(":server CAP * LS :\r\n");
 }
 
-void Server::processCommand(int fd, std::string& line)
+void Server::processCommand(int fd, size_t &i, std::string& line)
 {
     Client* client = getClientByFd(fd);
     if (!client)
@@ -58,7 +58,7 @@ void Server::processCommand(int fd, std::string& line)
             handlePing(client, param);
             return ;}
         if (command == "QUIT"){
-            handleQuit(client);
+            handleQuit(client, i);
             return ;}
         if (param == ""){
             sendReply(client, "461",  client->getNick(), command, "Not enough parameters");
@@ -78,7 +78,7 @@ void Server::processCommand(int fd, std::string& line)
         else if (command == "USER")     handleUser(client, param);
         else if (command == "NICK")     handleNick(client, param);
         else if (command == "PING")     handlePing(client, param);
-        else if (command == "QUIT")     handleQuit(client);
+        else if (command == "QUIT")     handleQuit(client, i);
         else if (command == "PRIVMSG")  handlePrivmsg(client, param);
         // else if (command == "PONG")  handlePong(client, param);
         else if (command == "JOIN")     handleJoin(client, param);
