@@ -1,5 +1,3 @@
-
-// Channel.cpp
 #include "Server.hpp"
 #include "Channel.hpp"
 #include "Client.hpp"
@@ -15,6 +13,9 @@ Channel::Channel(const std::string& name)
       _userLimit(0),
       _limitEnabled(false)
 {}
+
+Channel::~Channel(){}
+
 
 void Channel::addMember(Client* client) {
     if (std::find(_members.begin(), _members.end(), client) == _members.end())

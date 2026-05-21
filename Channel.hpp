@@ -5,44 +5,12 @@
 #include <vector>
 #include <map>
 
-class Client;  // Forward declaration
-
-
-/*// Channel.hpp (add to private section)
-bool _inviteOnly;      // +i invite-only mode
-bool _topicOpOnly;     // +t topic settable by ops only
-std::string _key;      // +k channel key
-bool _keyEnabled;      // Is +k mode enabled?
-int _userLimit;        // +l user limit value
-bool _limitEnabled;    // Is +l mode enabled?
-std::vector<Client*> _inviteList; // for handling invites
-
-// Add public getters/setters as needed
-void setInviteOnly(bool enabled);
-bool isInviteOnly() const;
-
-void setTopicOpOnly(bool enabled);
-bool isTopicOpOnly() const;
-
-void setKey(const std::string& key);
-void removeKey();
-bool isKeyEnabled() const;
-const std::string& getKey() const;
-
-void setLimit(int lim);
-void removeLimit();
-bool isLimitEnabled() const;
-int getLimit() const;
-
-void addInvite(Client* client);
-bool isInvited(Client* client) const;
-void clearInvite(Client* client);*/
-
-
+class Client;
 
 class Channel {
 public:
     Channel(const std::string& name);
+    ~Channel();
 
     // Member management
     void addMember(Client* client);
@@ -54,7 +22,6 @@ public:
     const std::string& getTopic() const;
     void setTopic(const std::string& topic);
 
-    // Modes, operators, invitees etc. can be added as needed
     void addOperator(Client* client);
     void removeOperator(Client* client);
     bool isOperator(Client* client) const;

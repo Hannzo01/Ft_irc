@@ -1,5 +1,4 @@
 #include "Server.hpp"
-#include <sstream>
 
 bool Server::keepRunning = true;
 
@@ -23,7 +22,10 @@ void    Server::setupSocket()
         throw std::runtime_error("Socket failed");
 
     if (fcntl(_serverSocket, F_SETFL, O_NONBLOCK) < 0)
+    {
+        close(_serverSocket);
         throw std::runtime_error("fcntl failed");
+    }
     int reuseAddr = 1;
 
     if (setsockopt(_serverSocket, SOL_SOCKET, SO_REUSEADDR, &reuseAddr, sizeof(reuseAddr)) < 0)
@@ -41,14 +43,22 @@ void Server::acceptNewConnection()
 
     clientFd = accept(_serverSocket, (sockaddr*) &clientAddr, &len);
     if (clientFd < 0)
+    {
         std::cerr << "Accept failed" << std::endl;
+        return ;
+    }
     else
     {
-        fcntl(clientFd, F_SETFL, O_NONBLOCK);
+        if (fcntl(clientFd, F_SETFL, O_NONBLOCK) < 0)
+        {
+            std::cerr << "fcntl failed" << std::endl;
+            close(clientFd);
+            return;
+        }
 
         Client* newClient = new Client(clientFd);
         _clients.push_back(newClient);
-        std::string clientIp = inet_ntoa(clientAddr.sin_addr);// ip ktwli string 
+        std::string clientIp = inet_ntoa(clientAddr.sin_addr);// convert ip to string 
         newClient->setHost(clientIp);
         std::cout << "[SERVER] New Connection ! FD: " << clientFd << " IP: " << clientIp << std::endl;
                             
@@ -90,7 +100,7 @@ void Server::runEventLoop()
     _pollFds.push_back(_serverPollFd);
     
     if (listen(_serverSocket, SOMAXCONN) < 0)
-        throw std::runtime_error("Listen failed");// taille dyal file dattente < 5 si 0 on laisse le system decide 
+        throw std::runtime_error("Listen failed");
     while (keepRunning)
     {
         if (poll(&_pollFds[0], _pollFds.size(), -1) < 0)
@@ -122,8 +132,8 @@ void Server::disconnectClient(size_t &i, int clientFd)
     }
     _clientBuffers.erase(clientFd);
     close(clientFd);
-    _pollFds.erase(_pollFds.begin() + i); // n7ydha mn vector
-    i--; //v kyn9slo size n9si bch mtn9zich chi client
+    _pollFds.erase(_pollFds.begin() + i);
+    i--; // Adjust index after erase to prevent skipping the next pollfd element
 }
 
 void Server::readDataFromClient(size_t &i, int clientFd)
@@ -143,9 +153,6 @@ void Server::readDataFromClient(size_t &i, int clientFd)
         while (lineEnd != std::string::npos)
         {
             line = _clientBuffers[clientFd].substr(0, lineEnd);
-            std::cout << "[PARSER] Commande extraite : [" << line << "]" << std::endl; // delete later
-
-            
             processCommand(clientFd, i, line);
 
             _clientBuffers[clientFd].erase(0,lineEnd + 2);
@@ -194,7 +201,7 @@ void Server::addChannel(std::string chname, Channel* newChannel) {
 void Server::removeChannel(const std::string& channelName) {
     std::map<std::string, Channel*>::iterator it = _channels.find(channelName);
     if (it != _channels.end()) {
-        delete it->second;          // Free memory if dynamically allocated
-        _channels.erase(it);        // Remove from map
+        delete it->second;
+        _channels.erase(it);
     }
 }

@@ -77,10 +77,8 @@ void Client::setNickFilled(bool nickffiled)
 }
 
 void Client::sendRaw(const std::string& msg) {
-    // Note: Doesn't handle partial writes or socket errors robustly!
     ssize_t result = send(_fd, msg.c_str(), msg.length(), 0);
     if (result < 0) {
-        // Optionally, log or handle error here
         std::cerr << "sendRaw failed" << std::endl;
     }
 }

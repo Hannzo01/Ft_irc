@@ -4,8 +4,8 @@
 #include <sys/socket.h>
 #include <iostream>
 #include <exception>
-#include <unistd.h> // pour close function
-#include <arpa/inet.h>  // For htons(), htonl(), etc.
+#include <unistd.h>
+#include <arpa/inet.h>  // For htons()
 #include <netinet/in.h> // For struct sockaddr_in
 #include <cstring>
 #include <string>
@@ -35,5 +35,3 @@ class Bot
 };
 
 #endif
-
-//handle mochkil ctrl c to the server will cause an infsetupSockete loop in the bot

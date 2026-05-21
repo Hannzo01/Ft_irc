@@ -14,12 +14,6 @@ bool Server::authorizedRequired(const std::string& command)
         || command == "MODE");
 }
 
-void Server::handleCap(Client* client, std::string param)
-{
-    if (!param.empty() && param.substr(0, 2) == "LS")
-        client->sendRaw(":server CAP * LS :\r\n");
-}
-
 void Server::processCommand(int fd, size_t &i, std::string& line)
 {
     Client* client = getClientByFd(fd);
@@ -30,7 +24,7 @@ void Server::processCommand(int fd, size_t &i, std::string& line)
     std::string         command;
     std::istringstream  iss(line);
     iss >> command;
-    
+
     for (size_t i = 0; i < command.size(); ++i)
         command[i] = toupper(command[i]);
     
@@ -40,13 +34,9 @@ void Server::processCommand(int fd, size_t &i, std::string& line)
         param =  "";
     else
         param =  line.substr(spacePos + 1);
-    
+
     if (!client->getisAuthorized())
     {
-        if (command == "CAP"){
-            handleCap(client, param);
-            return;
-        }
         if (!is_command(command)){
             sendReply(client, "421", client->getNick(), command, "Unkown command");
             return ;}

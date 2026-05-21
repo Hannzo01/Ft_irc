@@ -4,8 +4,8 @@
 #include <sys/socket.h>
 #include <iostream>
 #include <exception>
-#include <unistd.h> // pour close function
-#include <arpa/inet.h>  // For htons(), htonl(), etc.
+#include <unistd.h>
+#include <arpa/inet.h>  // For htons()
 #include <netinet/in.h> // For struct sockaddr_in
 #include <cstring>
 #include <string>
@@ -49,13 +49,11 @@ class Server
         void    handlePing(Client* client, std::string param);
         void    handlePrivmsg(Client* client, std::string param);
         void    handleQuit(Client* client, size_t &i);
-        // void handlePong(Client* client, std::string param);
         void    handleJoin(Client* client, std::string param);
         void    handleTopic(Client* client, std::string param);
         void    handleKick(Client* client, std::string param);
         void    handleInvite(Client* client, std::string param);
         void    handleMode(Client* client, std::string param);
-        void    handleCap(Client* client, std::string param);
 
     public:
 
@@ -94,7 +92,6 @@ class Server
         static void     signal_handler(int signum);
         static int      parse_port(std::string a1);
         
-        ///*channels handler*///
         Channel*    getChannel(std::string name) const;
         void        addChannel(std::string chname, Channel* newChannel);
 };

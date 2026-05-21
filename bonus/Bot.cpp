@@ -7,7 +7,6 @@ Bot::~Bot(){
 }
 void Bot::printSnowbotBanner() 
 {
-    std::cout << "\033[1;37m";
     std::cout << std::endl;
     std::cout << " ʰᵉʸ ⁱ ᵃᵐ ˢⁿᵒʷᵇᵒᵗ \033[1;22m"  <<std::endl;
     std::cout << "      .-\"\"-.      " << std::endl;
@@ -17,9 +16,7 @@ void Bot::printSnowbotBanner()
     std::cout << "     /      \\     " << std::endl;
     std::cout << "    |        |    " << std::endl;
     std::cout << "     \\      /     " << std::endl;
-    std::cout << "      `----`      " << std::endl;
-    std::cout << "\033[0m" << std::endl; // Remet la couleur par défaut
-}
+    std::cout << "      `----`      " << std::endl;}
 
 std::string Bot::get_a_random_joke(){
  std::string jokes[4];
@@ -29,7 +26,6 @@ std::string Bot::get_a_random_joke(){
     jokes[3] = "What did the ocean say to the beach? Nothing, it just waved.";
 
     int num = rand() % 4;
-
     return jokes[num];
 }
 
@@ -54,21 +50,30 @@ void Bot::setupSocket()
 
     std::string PASS_cmd = "PASS " + _password + "\r\n";
     if (send(ClientSocket, PASS_cmd.c_str(), PASS_cmd.length(), 0) < 0)
+    {
+        close(ClientSocket);
         throw std::runtime_error("send failed");
+    }
 
     std::string NICK_cmd = "NICK Snowbot\r\n";
     if (send(ClientSocket, NICK_cmd.c_str(), NICK_cmd.length(), 0) < 0)
+    {
+        close(ClientSocket);
         throw std::runtime_error("send failed");
+    }
+
 
     // USER <username> <hostname> <servername> :<realname>
     std::string USER_cmd = "USER Snowbot 0 * : Hey I am snowbot !\r\n";
     if (send(ClientSocket, USER_cmd.c_str(), USER_cmd.length(), 0) < 0)
+    {
+        close(ClientSocket);
         throw std::runtime_error("send failed");
-
+    }
 
     std::string buffer;
     std::string message;
-   printSnowbotBanner();
+    printSnowbotBanner();
 
     while (1)
     {
@@ -76,25 +81,29 @@ void Bot::setupSocket()
         memset(buff, 0, sizeof(buff));
         int byteread = recv(ClientSocket, buff, 1023, 0);
         if (byteread <= 0)
+        {
+            close(ClientSocket);
             throw std::runtime_error("Server disconnected or error while receiving");
+        }
             
         buffer = buffer.append(buff, byteread);
-        std::cout << buffer << std::endl; // n7ydha mn b3d
         size_t pos;
         while ((pos = buffer.find("\r\n")) != std::string::npos)
         {
 
             std::string line = buffer.substr(0, pos + 2);
-            std::cout << "[DEBUG] : " << line; // delete 
-
-
-            if (line.find("PING") != std::string::npos)
+            if (line.find("PING ") == 0) 
             {
-                std::string pong_msg = "PONG :localhost\r\n"; 
+                std::string token = line.substr(5); 
+                
+                std::string pong_msg = "PONG " + token; 
                 if (send(ClientSocket, pong_msg.c_str(), pong_msg.size(), 0) < 0)
+                {
+                    close(ClientSocket);
                     throw std::runtime_error("send failed");
-
+                }
             }
+
             size_t text_start = line.find(" :");
             if (text_start != std::string::npos)
             {
@@ -112,7 +121,10 @@ void Bot::setupSocket()
                         std::string joke = get_a_random_joke();
                         message = "PRIVMSG " + target + " :" + joke + "\r\n";
                         if (send(ClientSocket, message.c_str(), message.size(), 0) < 0)
+                        {
+                            close(ClientSocket);
                             throw std::runtime_error("send failed");
+                        }
 
                     }
                 }

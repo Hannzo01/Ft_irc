@@ -1,12 +1,11 @@
 #ifndef CLIENT_HPP
 #define CLIENT_HPP
 
-// Client.hpp
 
 #include <string>
 #include <vector>
 
-class Channel; // Forward declaration
+class Channel;
 
 class Client {
 public:
@@ -45,20 +44,21 @@ public:
 
     void sendRaw(const std::string& msg);
     std::string getPrefix() const;
-private:
-    int _fd;                         // Socket file descriptor
-    std::string _nickname;
-    std::string _username;
-    std::string _realName;
-    std::string _host;
 
-    bool _passwordFilled;
-    bool _nickFilled;
-    bool _hasUser;
+    private:
+        int _fd;                         // Socket file descriptor
+        std::string _nickname;
+        std::string _username;
+        std::string _realName;
+        std::string _host;
 
-    bool _authorized;
-    std::vector<Channel*> _joinedChannels;
-    Channel* _currentChannel;
+        bool _passwordFilled;
+        bool _nickFilled;
+        bool _hasUser;
+
+        bool _authorized;
+        std::vector<Channel*> _joinedChannels;
+        Channel* _currentChannel;
 };
 
 #endif

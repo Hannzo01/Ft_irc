@@ -24,8 +24,8 @@ int main(int argc, char *argv[])
         return 1;
     }
 
-    try{
-        //parse linput
+    try
+    {
         Bot::parse_input(argv[1], argv[2], argv[3]);
         Bot hannzo(argv[1], atoi(argv[2]), argv[3]);
         hannzo.setupSocket();
