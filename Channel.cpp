@@ -55,7 +55,7 @@ void Channel::broadcast_msg(Client* client, std::string message)
     {
         if (_members[i]->getFd() != client->getFd()){
             if (send(_members[i]->getFd(), message.c_str(), message.size(), 0) < 0)
-                throw std::runtime_error("send failed");
+                std::cerr << "Send failed" << std::endl;
         }
     }
 }
