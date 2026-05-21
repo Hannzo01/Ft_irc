@@ -41,13 +41,12 @@ void Server::processCommand(int fd, size_t &i, std::string& line)
     else
         param =  line.substr(spacePos + 1);
     
-    if (command == "CAP"){
-        handleCap(client, param);
-        return;
-    }
-
     if (!client->getisAuthorized())
     {
+        if (command == "CAP"){
+            handleCap(client, param);
+            return;
+        }
         if (!is_command(command)){
             sendReply(client, "421", client->getNick(), command, "Unkown command");
             return ;}
